@@ -5,6 +5,7 @@ import io
 import uuid
 import firebase_admin
 from firebase_admin import credentials, firestore
+import time
 
 #############################################
 
@@ -16,78 +17,7 @@ from utils.http import geturl
 
 #############################################
 
-USERS_PATH = "users"
-
-try:
-    cred = credentials.Certificate('firebase/sacckey.json')
-    default_app = firebase_admin.initialize_app(cred)    
-    db = firestore.client()
-    print("firebase initialized", db)
-
-    userscoll = db.collection(USERS_PATH)
-except:
-    #pe()
-    print("firebase could not be initialized")
-
-#############################################
-
-class Req:
-    def __init__(self, reqobj = {}):
-        global users
-        self.kind = None
-        self.id = None
-        self.uid = "mockuser"
-        self.username = "Anonymous"
-        self.newgame = False
-        self.variantkey = "standard"
-        self.fen = None
-        self.pgn = None
-        self.line = []
-        try:
-            for key, value in reqobj.items():
-                self.__dict__[key] = value
-        except:
-            pe()
-        self.user = User(self.uid)
-        if not ( self.uid == "mockuser" ):
-            if not ( self.uid in users ):
-                self.user.getdb()
-            else:
-                self.user = users[self.uid]
-        
-        print("request", self.kind, self.user)
-
-    def res(self, obj, alert = None):        
-        obj["id"] = self.id
-        obj["uid"] = self.uid        
-        obj["username"] = self.username
-        if alert:
-            obj["alertmessage"] = alert
-        return obj
-
-def serverlogic(reqobj):    
-    req = Req(reqobj)
-    #print(req)
-    if req.kind:
-        try:
-            return eval("{}(req)".format(req.kind))
-        except:
-            pe()
-            return({
-                "kind": "servererror"
-            })
-    return({
-        "kind": "unknownrequest"
-    })
-
-#############################################
-
-def connected(req):
-    return req.res({
-        "kind": "connectedack"
-    })
-
-#############################################
+themoves = []
 
 class ClientGame:
     def fen(self):
@@ -228,6 +158,7 @@ class ClientGame:
 clientgames = {}
 
 def setgame(clientgame):    
+    global themoves
     fen = clientgame.fen()
     pgn = clientgame.pgn()
     variantkey = clientgame.variantkey
@@ -239,7 +170,8 @@ def setgame(clientgame):
         "fen": fen,
         "pgn": pgn,
         "tree": tree,
-        "line": line
+        "line": line,
+        "themoves": themoves
     }
 
 def getboard(req):
@@ -252,13 +184,34 @@ def getboard(req):
     return req.res(setgame(clientgame))
 
 def makealgebmove(req):
-    global clientgames
+    global clientgames, thegame, thegamepgn_docref, themoves
     clientgame = clientgames[req.uid]    
     if req.user.verified:        
-        clientgame.makealgebmove(req.algeb)
-        return req.res(setgame(clientgame))
+        turn = clientgame.currentnode.board().turn
+        if ( ((turn == chess.WHITE) and (req.user.side == "white")) or ((turn == chess.BLACK) and (req.user.side == "black")) ) or True:            
+            move = chess.Move.from_uci(req.algeb)
+            if clientgame.currentnode.has_variation(move):
+                return req.res(setgame(clientgame), "Move already made.".format(req.user.side))                
+            clientgame.makealgebmove(req.algeb)            
+            newpgn = clientgame.pgn()
+            linestr = "_".join(clientgame.getline())
+            themoves.append({
+                "username": req.user.username,
+                "time": time.time(),
+                "line": linestr
+            })
+            thegamepgn_docref.update({
+                "pgn": newpgn,
+                "moves": themoves
+            })
+            print("setting the game", newpgn)
+            thegame = ClientGame("atomic", newpgn, None)
+            return req.res(setgame(clientgame))                
+        else:
+            return req.res(setgame(clientgame), "You are only allowrd to make moves for {}.".format(req.user.side))                
     else:
-        return req.res(setgame(clientgame), "You have to be logged in to make a move!")
+        clientgame.makealgebmove(req.algeb)
+        return req.res(setgame(clientgame))        
 
 def setline(req):
     global clientgames
@@ -301,6 +254,101 @@ def mergepgn(req):
     clientgame = clientgames[req.uid]        
     clientgame.mergepgn(req.pgn)
     return req.res(setgame(clientgame))
+
+#############################################
+
+USERS_PATH = "users"
+MOVES_PATH = "moves"
+THEGAMEDATA_PATH = "thegamedata"
+
+try:
+    cred = credentials.Certificate('firebase/sacckey.json')
+    default_app = firebase_admin.initialize_app(cred)    
+    db = firestore.client()
+    print("firebase initialized", db)
+
+    userscoll = db.collection(USERS_PATH)
+    movescoll = db.collection(MOVES_PATH)
+    gamedatacoll = db.collection(THEGAMEDATA_PATH)
+    thegamepgn_docref = gamedatacoll.document("pgn")
+    thegamepgn_dict = thegamepgn_docref.get().to_dict()
+    if not thegamepgn_dict:
+        thegamepgn = """[Variant "Atomic"]
+
+*
+"""
+        thegamepgn_docref.set({
+            "pgn": thegamepgn,
+            "moves": themoves
+        })
+    else:        
+        thegamepgn = thegamepgn_dict["pgn"]
+        themoves = thegamepgn_dict.get("moves", [])
+        print("thegamepgn found", thegamepgn, themoves)
+    thegame = ClientGame("atomic", thegamepgn, None)
+    print("thegame", thegame)
+
+except:
+    pe()
+    print("firebase could not be initialized")
+
+#############################################
+
+class Req:
+    def __init__(self, reqobj = {}):
+        global users
+        self.kind = None
+        self.id = None
+        self.uid = "mockuser"
+        self.username = "Anonymous"
+        self.newgame = False
+        self.variantkey = "standard"
+        self.fen = None
+        self.pgn = None
+        self.line = []
+        try:
+            for key, value in reqobj.items():
+                self.__dict__[key] = value
+        except:
+            pe()
+        self.user = User(self.uid)
+        if not ( self.uid == "mockuser" ):
+            if not ( self.uid in users ):
+                self.user.getdb()
+            else:
+                self.user = users[self.uid]
+        
+        print("request", self.kind, self.user)
+
+    def res(self, obj, alert = None):        
+        obj["id"] = self.id
+        obj["uid"] = self.uid        
+        obj["username"] = self.username
+        if alert:
+            obj["alertmessage"] = alert
+        return obj
+
+def serverlogic(reqobj):    
+    req = Req(reqobj)
+    #print(req)
+    if req.kind:
+        try:
+            return eval("{}(req)".format(req.kind))
+        except:
+            pe()
+            return({
+                "kind": "servererror"
+            })
+    return({
+        "kind": "unknownrequest"
+    })
+
+#############################################
+
+def connected(req):
+    return req.res({
+        "kind": "connectedack"
+    })
 
 #############################################
 
@@ -442,5 +490,15 @@ def setside(req):
         return req.res({
             "kind": "setsidefailed"
         }, "Log in to set side.")
+
+def getgame(req):
+    global thegame, clientgames
+    if req.user.verified:        
+        clientgames[req.user.uid] = thegame
+        return req.res(setgame(thegame))
+    else:
+        return req.res({
+            "kind": "getgamefailed"
+        })
 
 #############################################

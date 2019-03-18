@@ -18,12 +18,19 @@ createconn(function(){
     })
 })
 ////////////////////////////////////////////////////////////////////
-function buildapp(){
-    let board = Board("mainboard", {})
+board = Board("mainboard", {})
 
+function usercallback(){
+    console.log("main user changed")
+    board.sioreq({
+        "kind": "getgame"
+    })
+}
+
+function buildapp(){
     let maintabpane = TabPane("maintabpane", {fillwindow:true}).settabs([        
         Tab("board", "Board", board),  
-        ProfileTab(),
+        ProfileTab({usercallback: usercallback}),
         Tab("about", "About", Div().pad(5).html("Chess server."))    
     ]).selecttab("board", USE_STORED_IF_AVAILABLE)
 

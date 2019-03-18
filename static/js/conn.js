@@ -106,22 +106,34 @@ class GameNode_ extends e{
 		this.par = null
 		this.san = null
 		this.childs = {}
-		this.movediv = Div().bc("#eee").mw(70).w(60).mh(20).h(20).disp("flex").ai("center").jc("space-around").cp()
+		this.movediv = Div().bc("#eee").mw(100).w(100).mh(35).h(35).disp("flex").fd("column").ai("center").jc("space-around").cp()
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
 		this.a(this.movediv, this.childsdiv)
 	}
-	line(){
+	line(fullsan){
 		let current = this
 		let movelist = []
 		while(current.par){
-			movelist.unshift(stripsan(current.san))
+            let san = stripsan(current.san)
+            if(fullsan) san = current.san
+			movelist.unshift(san)
 			current = current.par
 		}
 		return movelist
-	}
+    }
+    linestr(){
+        return this.line(true).join("_")
+    }
 	build(){
-		let captiondiv = Div().html(this.san ? this.san : "root")
-		this.movediv.x.a(captiondiv).bds("solid").bdw(1).bdc("#777")
+        let captiondiv = Div().html(this.san ? this.san : "root")
+        let userdiv = Div()        
+        for(let item of (this.themoves || [])){            
+            if(item.line == this.linestr()){
+                userdiv.html(item.username)
+                break
+            }
+        }
+		this.movediv.x.a(captiondiv, userdiv).bds("solid").bdw(1).bdc("#777")
 		this.movediv.ae("mousedown", this.parboard.gamenodeclicked.bind(this.parboard, this.line()))
         this.childsdiv.x
         if((Object.keys(this.childs).length > 1)||(!this.par)){
@@ -151,14 +163,15 @@ class GameNode_ extends e{
 			})
 		}
 	}
-	fromobj(parboard, obj, par, gensan){
+	fromobj(parboard, obj, par, gensan, themoves){
 		this.parboard = parboard
 		this.childs = {}
 		this.par = par
-		this.san = gensan
+        this.san = gensan
+        this.themoves = themoves
 		for(let childsan in obj){
 			let childobj = obj[childsan]
-			this.childs[childsan] = GameNode().fromobj(this.parboard, childobj, this, childsan)
+			this.childs[childsan] = GameNode().fromobj(this.parboard, childobj, this, childsan, this.themoves)
 		}
 		return this
 	}
@@ -263,7 +276,7 @@ class Board_ extends ConnWidget_{
 
 	buildtree(){
 		//this.treediv.x.html("<pre>" + JSON.stringify(this.tree, null, 2) + "</pre>")
-		this.rootgamenode = GameNode().fromobj(this, this.tree, null, null)
+		this.rootgamenode = GameNode().fromobj(this, this.tree, null, null, this.themoves)
 		setseed(1)
 		this.treediv.x.a(this.rootgamenode.build())
 		this.rootgamenode.highlight(this.line)
@@ -400,7 +413,8 @@ class Board_ extends ConnWidget_{
             this.setpgn(pgn)
             this.fentext.setText(fen)
 		this.tree = obj.tree
-		this.line = obj.line
+        this.line = obj.line
+        this.themoves = obj.themoves
 		this.buildtree()
         }
     }
@@ -505,6 +519,10 @@ class ProfileTab_ extends Tab_{
                 this.changeside()
             }
         }
+
+        if(this.isuser()){
+            this.usercallback()
+        }
     }
 
     siores(resobj){
@@ -534,8 +552,14 @@ class ProfileTab_ extends Tab_{
         this.build()
     }
 
-    constructor(){
+    usercallback(){
+        console.log("user changed", this.user)
+    }
+
+    constructor(args){        
         super("profile", "Profile", Div())        
+        this.args = args || {}
+        this.usercallback = getelse(this.args, "usercallback", this.usercallback.bind(this))
         this.connwidget = ProfileConnWidget(this.siores.bind(this))
         this.contentelement.pad(5)
         this.sioreq({
@@ -547,5 +571,5 @@ class ProfileTab_ extends Tab_{
         this.connwidget.sioreq(reqobj)
     }
 }
-function ProfileTab(){return new ProfileTab_()}
+function ProfileTab(args){return new ProfileTab_(args)}
 ////////////////////////////////////////////////////////////////////
