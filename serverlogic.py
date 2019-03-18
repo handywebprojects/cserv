@@ -175,7 +175,8 @@ def setgame(clientgame):
     }
 
 def getboard(req):
-    global clientgames
+    global clientgames, thegame
+    return req.res(setgame(thegame))
     if ( req.uid in clientgames ) and ( not req.newgame ):
         clientgame = clientgames[req.uid]
     else:
@@ -188,7 +189,7 @@ def makealgebmove(req):
     clientgame = clientgames[req.uid]    
     if req.user.verified:        
         turn = clientgame.currentnode.board().turn
-        if ( ((turn == chess.WHITE) and (req.user.side == "white")) or ((turn == chess.BLACK) and (req.user.side == "black")) ) or True:            
+        if ( ((turn == chess.WHITE) and (req.user.side == "white")) or ((turn == chess.BLACK) and (req.user.side == "black")) ):            
             move = chess.Move.from_uci(req.algeb)
             if clientgame.currentnode.has_variation(move):
                 return req.res(setgame(clientgame), "Move already made.".format(req.user.side))                
@@ -222,7 +223,8 @@ def setline(req):
 def delmove(req):
     global clientgames
     clientgame = clientgames[req.uid]        
-    clientgame.delmove()
+    #clientgame.delmove()
+    clientgame.backmove()
     return req.res(setgame(clientgame))
 
 def tobegin(req):
@@ -480,6 +482,9 @@ def vercode(req):
 
 def setside(req):
     if req.user.verified:
+        return req.res({
+            "kind": "setsidefailed"
+        }, "You are not allowed to change sides.")
         #print("set side", req.side, req.user)
         req.user.setside(req.side).setdb()
         return req.res({
