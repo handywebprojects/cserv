@@ -323,6 +323,7 @@ class User:
             self.username = "Anonymous"
             self.code = None
             self.verified = False
+            self.side = None
 
     def setusername(self, username):
         self.username = username
@@ -336,12 +337,17 @@ class User:
         self.verified = verified
         return self
 
+    def setside(self, side):
+        self.side = side
+        return self
+
     def setdb(self):
-        global userscoll
+        global userscoll, users
         doc = userscoll.document(self.uid)
         userdata = self.__dict__
         print("setting user in db", userdata)
         doc.set(userdata)
+        users[self.uid] = self
         return self
 
     def getdb(self):
@@ -354,6 +360,7 @@ class User:
             self.username = data.get("username", "Anonymous")
             self.code = data.get("code", None)
             self.verified = data.get("verified", False)
+            self.side = data.get("side", None)
             print("set user to", self)
         except:
             print("no data")
@@ -400,5 +407,18 @@ def vercode(req):
         "kind": "codeverified",
         "verified": verified
     })
+
+def setside(req):
+    if req.user.verified:
+        print("set side", req.side, req.user)
+        req.user.setside(req.side).setdb()
+        return req.res({
+            "kind": "auth",
+            "user": req.user.__dict__
+        })
+    else:
+        return req.res({
+            "kind": "setsidefailed"
+        }, "Log in to set side.")
 
 #############################################

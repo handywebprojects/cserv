@@ -453,6 +453,21 @@ class ProfileTab_ extends Tab_{
         this.build()
     }
 
+    changeside(){
+        let side = null
+        while(!side){
+            side = window.prompt("Choose side to play. Type 'black' or type 'white'. This decision is committal for this account !")
+            if((side=="white")||(side=="black")){
+                this.sioreq({
+                    "kind": "setside",
+                    "side": side
+                })
+            }else{
+                side = null
+            }
+        }
+    }
+
     build(){        
         if(this.isuser()){
             this.setcaption(this.getusername())
@@ -481,7 +496,14 @@ class ProfileTab_ extends Tab_{
             }            
         }else{
             this.contentelement.x.a(Button("Sign out", this.signout.bind(this)).fs(20).mar(10))
-            this.contentelement.a(Div().ml(20).ff("monospace").mt(20).html("Your User Id ( don't reveal to third parties ):"), CopyText({width: 500, dopaste: false}).setText(this.getuid()).mt(10).ml(30))
+            this.sidediv = Div().ml(20).html(this.user.side || "Not chosen yet.").fs(25).curlyborder().pad(10).ta("center").w(200)
+            this.changesidebutton = Button("Change side", this.changeside.bind(this)).ml(15).fs(16)
+            this.contentelement.a(Div().mt(20).ml(20).ff("monospace").html("Your Side:"))
+            this.contentelement.a(Div().mt(20).disp("flex").ai("center").a(this.sidediv, this.changesidebutton))
+            this.contentelement.a(Div().ml(20).ff("monospace").mt(35).html("Your User Id ( don't reveal to third parties ):"), CopyText({width: 500, dopaste: false}).setText(this.getuid()).mt(10).ml(30))
+            if(!this.user.side){
+                this.changeside()
+            }
         }
     }
 
@@ -500,10 +522,10 @@ class ProfileTab_ extends Tab_{
                 window.alert("Code was not found on your profile page! Sign in failed.")
             }
         }else if(kind == "auth"){
-            let user = resobj.user
-            if(user.verified){
-                this.setuid(user.uid)
-                this.setusername(user.username)                
+            this.user = resobj.user
+            if(this.user.verified){
+                this.setuid(this.user.uid)
+                this.setusername(this.user.username)                
             }else{
                 this.setuid("mockuser")
             }
