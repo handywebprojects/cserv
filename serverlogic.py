@@ -48,11 +48,14 @@ class Req:
         except:
             pe()
         self.user = User(self.uid)
+        print("request", self.uid, self.kind, self.user)
 
-    def res(self, obj):        
+    def res(self, obj, alert = None):        
         obj["id"] = self.id
         obj["uid"] = self.uid        
         obj["username"] = self.username
+        if alert:
+            obj["alertmessage"] = alert
         return obj
 
 def serverlogic(reqobj):    
@@ -244,8 +247,11 @@ def getboard(req):
 def makealgebmove(req):
     global clientgames
     clientgame = clientgames[req.uid]    
-    clientgame.makealgebmove(req.algeb)
-    return req.res(setgame(clientgame))
+    if req.user.verified:        
+        clientgame.makealgebmove(req.algeb)
+        return req.res(setgame(clientgame))
+    else:
+        return req.res(setgame(clientgame), "You have to be logged in to make a move!")
 
 def setline(req):
     global clientgames
@@ -292,7 +298,10 @@ def mergepgn(req):
 #############################################
 
 def auth(req):
+    global users
     user = User(req.uid).getdb()
+
+    print("users", users)
 
     return req.res({
         "kind": "auth",
@@ -336,7 +345,7 @@ class User:
         return self
 
     def getdb(self):
-        global userscoll
+        global userscoll, users        
         doc = userscoll.document(self.uid).get()
         print("getting data for", self)
         try:
@@ -348,6 +357,7 @@ class User:
             print("set user to", self)
         except:
             print("no data")
+        users[self.uid] = self        
         return self
 
     def __repr__(self):

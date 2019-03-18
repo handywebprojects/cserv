@@ -11,7 +11,12 @@ function createconn(connectedcallback){
     }
 
     function siores(resobj){
-        //console.log("siores", resobj)
+        console.log("<--", resobj)
+        kind = resobj.kind
+        alertmessage = resobj.alertmessage
+        if(alertmessage){
+            window.alert(alertmessage)
+        }
         clients[resobj.id].siores(resobj)
     }
 
@@ -25,7 +30,7 @@ function createconn(connectedcallback){
 class CButton_ extends Button_{
         constructor(caption, action){
             super(caption, action)
-            this.fs(20).bdw(0).bc("inherit").c("#009").pad(0)
+            this.fs(20).bdw(0).bc("inherit").c("#009").pad(0).cp()
         }
 }
 function CButton(caption, action){return new CButton_(caption, action)}
@@ -38,11 +43,11 @@ class ConnWidget_ extends e{
     }
 
     uidpath(){
-        return `${this.id}/uid`
+        return `profileconn/uid`
     }
 
     usernamepath(){
-        return `${this.id}/username`
+        return `profileconn/username`
     }
 
     getuid(){
@@ -65,11 +70,11 @@ class ConnWidget_ extends e{
         localStorage.setItem(this.usernamepath(), username)
     }
 
-    sioreq(reqobj){
-	//console.log(reqobj)
+    sioreq(reqobj){	
         reqobj.id = this.id
         reqobj.uid = this.getuid()
         reqobj.username = this.getusername()
+        console.log("-->", reqobj)
         rawsocket.emit("sioreq", reqobj)
     }
 
@@ -289,11 +294,10 @@ class Board_ extends ConnWidget_{
     flip(){
         this.setflip(!this.getflip())        
         this.basicboard.buildall()
+        this.buildcontrolpanel()
     }
 
-    build(){        
-        this.boardwidth = this.basicboard.totalwidth()
-        this.maincontainer = Div().disp("flex").fd("column")
+    buildcontrolpanel(){
         this.controlpanel = Div().disp("flex").ai("center").jc("space-around").bc("#eef").h(this.controlheight - this.fenheight).w(this.boardwidth)
         this.variantcombohook = Div()
         this.controlpanel.a(this.variantcombohook)
@@ -306,8 +310,16 @@ class Board_ extends ConnWidget_{
         this.controlpanel.a(CButton("↩", this.reset.bind(this)).fs(35).c("#f00").mt(8))
         this.controlpanel.a(CButton("↕", this.flip.bind(this)).fs(25))        
         this.controlpanel.a(Button("Analyze lichess", this.analyzelichess.bind(this)))        
+        this.controlpanelhook.x.a(this.controlpanel)
+    }
+
+    build(){        
+        this.boardwidth = this.basicboard.totalwidth()
+        this.maincontainer = Div().disp("flex").fd("column")        
         this.fentext = CopyText({width:this.boardwidth, height:this.fenheight, pastecallback:this.fenpastecallback.bind(this)})
-        this.maincontainer.a(this.controlpanel, this.fentext, this.basicboard)
+        this.controlpanelhook = Div()
+        this.maincontainer.a(this.controlpanelhook, this.fentext, this.basicboard)
+        this.buildcontrolpanel()
         this.guicontainer = Div().disp("flex")                              
         this.pgndiv = Div()
         this.mergepgndiv = Div()
