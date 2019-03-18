@@ -55,7 +55,7 @@ class Req:
             else:
                 self.user = users[self.uid]
         
-        print("request", self.uid, self.kind, self.user)
+        print("request", self.kind, self.user)
 
     def res(self, obj, alert = None):        
         obj["id"] = self.id
@@ -140,8 +140,8 @@ class ClientGame:
             pgn = "[FEN \"{}\"]\n{}".format(self.rootnode.board().fen(), pgn)
         if not "Variant" in pgn:
             pgn = "[Variant \"{}\"]\n{}".format(self.variantkey, pgn)        
-        print("merge pgn")
-        print(pgn)
+        #print("merge pgn")
+        #print(pgn)
         pgnio = io.StringIO(pgn)
         srcgame = chess.pgn.read_game(pgnio)                 
         self.mergegame(self.rootnode, srcgame)
@@ -308,8 +308,6 @@ def auth(req):
     global users
     user = User(req.uid).getdb()
 
-    print("users", users)
-
     return req.res({
         "kind": "auth",
         "user": user.__dict__
@@ -346,7 +344,7 @@ class User:
         global userscoll, users
         doc = userscoll.document(self.uid)
         userdata = self.__dict__
-        print("setting user in db", userdata)
+        #print("setting user in db", userdata)
         doc.set(userdata)
         self.storelocal()
 
@@ -364,14 +362,15 @@ class User:
     def getdb(self):
         global userscoll, users        
         doc = userscoll.document(self.uid).get()
-        print("getting data for", self)
+        #print("getting data for", self)
         try:
             data = doc.to_dict()
-            print("received data", data)
+            #print("received data", data)
             self.fromdata(data)
-            print("set user to", self)
+            #print("set user to", self)
         except:
-            print("no data")
+            #print("no data")
+            pass
         return self.storelocal()
 
     def __repr__(self):
@@ -384,7 +383,7 @@ def getuser(uid):
     return User(uid)
 
 def signin(req):    
-    print("signing in with username [ {} ]".format(req.username))
+    #print("signing in with username [ {} ]".format(req.username))
 
     genuuid = uuid.uuid1().hex
     code = uuid.uuid1().hex
@@ -400,11 +399,11 @@ def signin(req):
 
 def vercode(req):    
     global userscoll
-    print("verifying code for uid [ {} ]".format(req.tempuid))
+    #print("verifying code for uid [ {} ]".format(req.tempuid))
 
     user = getuser(req.tempuid)
 
-    print(user)
+    #print(user)
 
     profile = geturl("https://lichess.org/@/{}".format(req.username), verbose = True)
 
@@ -415,7 +414,7 @@ def vercode(req):
 
         for doc in sameusers:
             data = doc.to_dict()
-            print("user doc already exists", data)
+            #print("user doc already exists", data)
             user = User(data["uid"]).fromdata(data)
             break
 
@@ -427,12 +426,13 @@ def vercode(req):
 
     return req.res({
         "kind": "codeverified",
-        "verified": verified
+        "verified": verified,
+        "user": user.__dict__
     })
 
 def setside(req):
     if req.user.verified:
-        print("set side", req.side, req.user)
+        #print("set side", req.side, req.user)
         req.user.setside(req.side).setdb()
         return req.res({
             "kind": "auth",

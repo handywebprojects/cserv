@@ -516,6 +516,7 @@ class ProfileTab_ extends Tab_{
             this.tempuid = resobj.setuid
         }else if(kind=="codeverified"){
             if(resobj.verified){
+                this.user = resobj.user
                 this.setusername(resobj.username)
                 this.setuid(resobj.uid)
             }else{
