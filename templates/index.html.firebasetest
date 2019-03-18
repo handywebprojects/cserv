@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <title>Chess Server</title>
+
+    <script src="https://www.gstatic.com/firebasejs/5.8.4/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+</head>
+
+<body>  
+    
+    Welcome to Chess Server.
+    <div style="background-color: #eee; padding: 5px;">
+        User: <div style="display: inline-block; padding: 3px; background-color: #ffd; font-family: monospace;" id="user"></div>
+        <div style="display: inline-block;">
+            <input type="button" value="Sign in anonymously" onclick="signInAnonymously()">
+            <input type="button" value="Sign out" onclick="signout()">
+        </div>
+        <div style="display: inline-block;" id="ui"></div>
+    </div>
+
+    <script>
+        var config={
+        {% for key in fbconfig %}
+            {{ key }} : "{{ fbconfig[key] }}",
+        {% endfor %}
+        }
+
+        function AuthStateChanged(user){
+            uid = "none"
+            if(user){
+                console.log("auth state changed", user, user.uid)      
+                uid = user.uid          
+            }else{
+                console.log("no user")
+            }
+            document.getElementById("user").innerHTML = uid
+        }
+
+        function signInAnonymously(){
+            firebase.auth().signInAnonymously().then(
+                function(){console.log("ok")},
+                function(err){console.log(err)}
+            )
+        }
+
+        function signout(){
+            firebase.auth().signOut()
+        }
+
+        firebase.initializeApp(config)
+        auth = firebase.auth()
+        ui = new firebaseui.auth.AuthUI(auth)
+        uie = document.getElementById("ui")
+        ui.start(uie, {
+            signInSuccessUrl: '/',
+            signInOptions: [         
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,       
+            ]
+        })
+
+        auth.onAuthStateChanged(AuthStateChanged)
+    </script>
+
+</body>
+
+</html>

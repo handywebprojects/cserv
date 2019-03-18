@@ -1,0 +1,8 @@
+echo `ps ax | grep 'virtual'`
+echo "Stopping server"
+b/sd.sh
+echo `ps ax | grep 'virtual'`
+echo "Starting server"
+b/d.sh
+echo `ps ax | grep 'virtual'`
+

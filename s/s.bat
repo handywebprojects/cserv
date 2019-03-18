@@ -1,0 +1,1 @@
+start cmd /C r server.py
