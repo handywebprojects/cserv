@@ -33,6 +33,7 @@ except:
 
 class Req:
     def __init__(self, reqobj = {}):
+        global users
         self.kind = None
         self.id = None
         self.uid = "mockuser"
@@ -48,6 +49,12 @@ class Req:
         except:
             pe()
         self.user = User(self.uid)
+        if not ( self.uid == "mockuser" ):
+            if not ( self.uid in users ):
+                self.user.getdb()
+            else:
+                self.user = users[self.uid]
+        
         print("request", self.uid, self.kind, self.user)
 
     def res(self, obj, alert = None):        
@@ -313,17 +320,11 @@ users = {}
 class User:
     def __init__(self, uid):
         global users
-        self.uid = uid        
-        if self.uid in users:
-            self.username = users[self.uid].username
-            self.code = users[self.uid].code
-            self.verified = users[self.uid].verified
-        else:
-            users[self.uid] = self
-            self.username = "Anonymous"
-            self.code = None
-            self.verified = False
-            self.side = None
+        self.uid = uid                
+        self.username = "Anonymous"
+        self.code = None
+        self.verified = False
+        self.side = None
 
     def setusername(self, username):
         self.username = username
@@ -347,7 +348,17 @@ class User:
         userdata = self.__dict__
         print("setting user in db", userdata)
         doc.set(userdata)
+        self.storelocal()
+
+    def storelocal(self):
         users[self.uid] = self
+        return self
+
+    def fromdata(self, data):
+        self.username = data.get("username", "Anonymous")
+        self.code = data.get("code", None)
+        self.verified = data.get("verified", False)
+        self.side = data.get("side", None)
         return self
 
     def getdb(self):
@@ -357,27 +368,28 @@ class User:
         try:
             data = doc.to_dict()
             print("received data", data)
-            self.username = data.get("username", "Anonymous")
-            self.code = data.get("code", None)
-            self.verified = data.get("verified", False)
-            self.side = data.get("side", None)
+            self.fromdata(data)
             print("set user to", self)
         except:
             print("no data")
-        users[self.uid] = self        
-        return self
+        return self.storelocal()
 
     def __repr__(self):
         return "[ User {} {} {} {}]".format(self.uid, self.username, self.code, self.verified)
 
-def signin(req):
-    global users    
+def getuser(uid):
+    global users
+    if uid in users:
+        return users[uid]
+    return User(uid)
+
+def signin(req):    
     print("signing in with username [ {} ]".format(req.username))
 
     genuuid = uuid.uuid1().hex
     code = uuid.uuid1().hex
 
-    user = User(genuuid).setusername(req.username).setcode(code)
+    user = User(genuuid).setusername(req.username).setcode(code).storelocal()
 
     return req.res({
         "kind": "signin",
@@ -387,11 +399,10 @@ def signin(req):
     })
 
 def vercode(req):    
-    req.uid = req.tempuid
+    global userscoll
+    print("verifying code for uid [ {} ]".format(req.tempuid))
 
-    print("verifying code for uid [ {} ]".format(req.uid))
-
-    user = User(req.uid)
+    user = getuser(req.tempuid)
 
     print(user)
 
@@ -399,9 +410,20 @@ def vercode(req):
 
     verified = user.code in profile
 
-    user.setverified(verified)
+    if verified:            
+        sameusers = userscoll.where("username", "==", user.username).get()    
 
-    user.setdb()
+        for doc in sameusers:
+            data = doc.to_dict()
+            print("user doc already exists", data)
+            user = User(data["uid"]).fromdata(data)
+            break
+
+        user.setverified(verified)
+
+        user.setdb()
+
+    req.uid = user.uid
 
     return req.res({
         "kind": "codeverified",
