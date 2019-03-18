@@ -429,6 +429,11 @@ class ProfileTab_ extends Tab_{
         })
     }
 
+    signout(){
+        this.setuid("mockuser")
+        this.build()
+    }
+
     build(){        
         if(this.isuser()){
             this.setcaption(this.getusername())
@@ -445,19 +450,40 @@ class ProfileTab_ extends Tab_{
                 this.contentelement.a(Div().mar(5).disp("flex").ai("center").a(CopyText({width: 600, dopaste: false}).setText(this.code), this.vercodebutton))
             }else{
                 this.usernameinput = FeaturedTextInput("Username:")
+                let defusername = this.getusername()
+                if(defusername == "Anonymous") defusername = ""
+                this.usernameinput.setText(defusername)
                 this.signinbutton = Button("Sign in", this.signin.bind(this)).h(30).fs(16).ml(10)
                 this.contentelement.x.a(Div().disp("flex").ai("center").a(this.usernameinput, this.signinbutton))
             }            
+        }else{
+            this.contentelement.x.a(Button("Sign out", this.signout.bind(this)).fs(20).mar(10))
         }
     }
 
     siores(resobj){
-        console.log("profile received", resobj)
+        //console.log("profile received", resobj)
         let kind = resobj.kind
+        this.code = null
         if(kind=="signin"){
             this.code = resobj.setcode
             this.tempuid = resobj.setuid
-        }        
+        }else if(kind=="codeverified"){
+            if(resobj.verified){
+                this.setusername(resobj.username)
+                this.setuid(resobj.uid)
+            }else{
+                window.alert("Code was not found on your profile page! Sign in failed.")
+            }
+        }else if(kind == "auth"){
+            let user = resobj.user
+            if(user.verified){
+                this.setuid(user.uid)
+                this.setusername(user.username)                
+            }else{
+                this.setuid("mockuser")
+            }
+        }
         this.build()
     }
 

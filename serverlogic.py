@@ -3,6 +3,8 @@
 from traceback import print_exc as pe
 import io
 import uuid
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 #############################################
 
@@ -11,6 +13,21 @@ from utils.chess import treeofgamenode, sanext
 import chess
 import chess.pgn
 from utils.http import geturl
+
+#############################################
+
+USERS_PATH = "users"
+
+try:
+    cred = credentials.Certificate('firebase/sacckey.json')
+    default_app = firebase_admin.initialize_app(cred)    
+    db = firestore.client()
+    print("firebase initialized", db)
+
+    userscoll = db.collection(USERS_PATH)
+except:
+    #pe()
+    print("firebase could not be initialized")
 
 #############################################
 
@@ -274,9 +291,11 @@ def mergepgn(req):
 #############################################
 
 def auth(req):
+    user = User(req.uid).getdb()
+
     return req.res({
         "kind": "auth",
-        "status": "ok"
+        "user": user.__dict__
     })
 
 users = {}
@@ -288,10 +307,12 @@ class User:
         if self.uid in users:
             self.username = users[self.uid].username
             self.code = users[self.uid].code
+            self.verified = users[self.uid].verified
         else:
             users[self.uid] = self
             self.username = "Anonymous"
             self.code = None
+            self.verified = False
 
     def setusername(self, username):
         self.username = username
@@ -301,8 +322,35 @@ class User:
         self.code = code
         return self
 
+    def setverified(self, verified):
+        self.verified = verified
+        return self
+
+    def setdb(self):
+        global userscoll
+        doc = userscoll.document(self.uid)
+        userdata = self.__dict__
+        print("setting user in db", userdata)
+        doc.set(userdata)
+        return self
+
+    def getdb(self):
+        global userscoll
+        doc = userscoll.document(self.uid).get()
+        print("getting data for", self)
+        try:
+            data = doc.to_dict()
+            print("received data", data)
+            self.username = data.get("username", "Anonymous")
+            self.code = data.get("code", None)
+            self.verified = data.get("verified", False)
+            print("set user to", self)
+        except:
+            print("no data")
+        return self
+
     def __repr__(self):
-        return "[ User {} {} {} ]".format(self.uid, self.username, self.code)
+        return "[ User {} {} {} {}]".format(self.uid, self.username, self.code, self.verified)
 
 def signin(req):
     global users    
@@ -311,7 +359,7 @@ def signin(req):
     genuuid = uuid.uuid1().hex
     code = uuid.uuid1().hex
 
-    user = User(genuuid).setcode(code)
+    user = User(genuuid).setusername(req.username).setcode(code)
 
     return req.res({
         "kind": "signin",
@@ -320,7 +368,7 @@ def signin(req):
         "setcode": code
     })
 
-def vercode(req):
+def vercode(req):    
     req.uid = req.tempuid
 
     print("verifying code for uid [ {} ]".format(req.uid))
@@ -332,6 +380,10 @@ def vercode(req):
     profile = geturl("https://lichess.org/@/{}".format(req.username), verbose = True)
 
     verified = user.code in profile
+
+    user.setverified(verified)
+
+    user.setdb()
 
     return req.res({
         "kind": "codeverified",
