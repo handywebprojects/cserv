@@ -408,7 +408,7 @@ class CopyText_ extends e{
     }
 
     getText(){
-        return this.texarea.getText()
+        return this.textinput.getText()
     }
 
     copy(){
@@ -432,7 +432,7 @@ class CopyText_ extends e{
         this.width = width
         this.height = height        
         this.copydiv.w(this.dopaste ? this.controlwidth/2 : this.controlwidth).h(this.height/1.4)
-        this.pastediv.w(this.controlwidth/2).h(this.height/1.4)
+        this.pastediv.w(this.docopy ? this.controlwidth/2 : this.controlwidth).h(this.height/1.4)
         this.textinput.w(this.width - this.controlwidth * 1.2).h(this.height * 0.5).fs(this.height * 0.5)
         this.w(this.width).h(this.height)
         return this
@@ -440,8 +440,9 @@ class CopyText_ extends e{
 
     constructor(args){
         super("div")
-        args = args || {}
-        this.dopaste = args.dopaste
+        args = args || {}        
+        this.dopaste = getelse(args, "dopaste", true)
+        this.docopy = getelse(args, "docopy", true)
         this.disp("flex").ai("center").jc("space-around").bc("#ddd").ac("unselectable")
         this.width = args.width || 400
         this.height = args.height || 40
@@ -452,7 +453,8 @@ class CopyText_ extends e{
         this.pastediv = Div().disp("flex").ai("center").jc("space-around").a(Div().html("Paste")).bc("#fee").cp().fs(10)
         this.pastediv.ae("mousedown", this.paste.bind(this))        
         this.textinput = TextInput().ff("monospace")
-        this.a(this.textinput, this.copydiv)
+        this.a(this.textinput)
+        if(this.docopy) this.a(this.copydiv)
         if(this.dopaste) this.a(this.pastediv)
         this.resize(this.width, this.height)
     }
@@ -782,11 +784,12 @@ function Select(){return new Select_()}
 ////////////////////////////////////////////////////////////////////
 // featuredtextinput
 class FeaturedTextInput_ extends e{
-    constructor(label){
+    constructor(label, width){
         super("div")
-        this.disp("flex").ai("center").jc("space-around").w(300).curlyborder().pad(3).mar(3)
+        this.width = width || 300
+        this.disp("flex").ai("center").jc("space-around").w(this.width).curlyborder().pad(3).mar(3)
         this.label = Div().html(label)
-        this.textinput = TextInput().w(200).fs(20).pad(3).pl(5)
+        this.textinput = TextInput().w(this.width - 100).fs(20).pad(3).pl(5)
         this.a(this.label, this.textinput)
     }
 
@@ -799,7 +802,7 @@ class FeaturedTextInput_ extends e{
         return this.textinput.getText()
     }
 }
-function FeaturedTextInput(label){return new FeaturedTextInput_(label)}
+function FeaturedTextInput(label, width){return new FeaturedTextInput_(label, width)}
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////

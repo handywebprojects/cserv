@@ -422,6 +422,13 @@ class ProfileTab_ extends Tab_{
         })
     }
 
+    signinuid(){        
+        this.setuid(this.uidinput.getText())
+        this.sioreq({
+            "kind": "auth"
+        })
+    }
+
     vercode(){
         this.sioreq({
             "kind": "vercode",
@@ -447,17 +454,22 @@ class ProfileTab_ extends Tab_{
             if(this.code){
                 this.contentelement.x.html("Insert this code into your profile:")
                 this.vercodebutton = Button("Verify code", this.vercode.bind(this)).ml(12).fs(18)
-                this.contentelement.a(Div().mar(5).disp("flex").ai("center").a(CopyText({width: 600, dopaste: false}).setText(this.code), this.vercodebutton))
+                this.contentelement.a(Div().mar(5).disp("flex").ai("center").a(CopyText({width: 500, dopaste: false}).setText(this.code), this.vercodebutton))
             }else{
                 this.usernameinput = FeaturedTextInput("Username:")
                 let defusername = this.getusername()
                 if(defusername == "Anonymous") defusername = ""
                 this.usernameinput.setText(defusername)
-                this.signinbutton = Button("Sign in", this.signin.bind(this)).h(30).fs(16).ml(10)
+                this.signinbutton = Button("Sign in with Username", this.signin.bind(this)).h(30).fs(16).ml(10)
                 this.contentelement.x.a(Div().disp("flex").ai("center").a(this.usernameinput, this.signinbutton))
+                this.uidinput = CopyText({width: 500, docopy: false})
+                this.signinuidbutton = Button("Sign in with User Id", this.signinuid.bind(this)).h(30).fs(16).ml(10)
+                this.contentelement.a(Div().mt(20).ml(10).ff("monospace").html("Your User Id:"))
+                this.contentelement.a(Div().mt(10).ml(20).disp("flex").ai("center").a(this.uidinput, this.signinuidbutton))
             }            
         }else{
             this.contentelement.x.a(Button("Sign out", this.signout.bind(this)).fs(20).mar(10))
+            this.contentelement.a(Div().ml(20).ff("monospace").mt(20).html("Your User Id ( don't reveal to third parties ):"), CopyText({width: 500, dopaste: false}).setText(this.getuid()).mt(10).ml(30))
         }
     }
 

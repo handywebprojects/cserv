@@ -47,6 +47,7 @@ class Req:
                 self.__dict__[key] = value
         except:
             pe()
+        self.user = User(self.uid)
 
     def res(self, obj):        
         obj["id"] = self.id

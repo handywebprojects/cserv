@@ -5,6 +5,13 @@ WS_SCHEME = ( window.location.protocol == "https:" ) ? "wss://" : "ws://"
 SOCKET_SUBMIT_URL = WS_SCHEME + window.location.host
 ////////////////////////////////////////////////////////////////////
 
+function getelse(obj, key, defaultvalue){
+    if(key in obj) return obj[key]
+    return defaultvalue
+}
+
+////////////////////////////////////////////////////////////////////
+
 //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
 seed = 1
 function random(){
@@ -209,3 +216,4 @@ ONE_HOUR = 60 * ONE_MINUTE
 ONE_DAY = 24 * ONE_HOUR
 
 ////////////////////////////////////////////////////////////////////
+
