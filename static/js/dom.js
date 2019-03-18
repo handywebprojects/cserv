@@ -431,7 +431,7 @@ class CopyText_ extends e{
     resize(width, height){
         this.width = width
         this.height = height        
-        this.copydiv.w(this.controlwidth/2).h(this.height/1.4)
+        this.copydiv.w(this.dopaste ? this.controlwidth/2 : this.controlwidth).h(this.height/1.4)
         this.pastediv.w(this.controlwidth/2).h(this.height/1.4)
         this.textinput.w(this.width - this.controlwidth * 1.2).h(this.height * 0.5).fs(this.height * 0.5)
         this.w(this.width).h(this.height)
@@ -440,6 +440,8 @@ class CopyText_ extends e{
 
     constructor(args){
         super("div")
+        args = args || {}
+        this.dopaste = args.dopaste
         this.disp("flex").ai("center").jc("space-around").bc("#ddd").ac("unselectable")
         this.width = args.width || 400
         this.height = args.height || 40
@@ -450,7 +452,8 @@ class CopyText_ extends e{
         this.pastediv = Div().disp("flex").ai("center").jc("space-around").a(Div().html("Paste")).bc("#fee").cp().fs(10)
         this.pastediv.ae("mousedown", this.paste.bind(this))        
         this.textinput = TextInput().ff("monospace")
-        this.a(this.textinput, this.copydiv, this.pastediv)
+        this.a(this.textinput, this.copydiv)
+        if(this.dopaste) this.a(this.pastediv)
         this.resize(this.width, this.height)
     }
 }
@@ -866,13 +869,18 @@ function SplitPane(args){return new SplitPane_(args)}
 ////////////////////////////////////////////////////////////////////
 // tab
 class Tab_ extends e{
+    setcaption(caption){
+        this.caption = caption
+        this.captiondiv.html(this.caption)
+    }
+
     constructor(id, caption, contentelement){
         super("div")
-        this.id = id
-        this.caption = caption
+        this.id = id        
         this.contentelement = contentelement
         this.disp("flex").ai("center").jc("space-around").bc("#ddd").cp().pad(5)
-        this.captiondiv = Div().html(this.caption)
+        this.captiondiv = Div()
+        this.setcaption(caption)
         this.a(this.captiondiv)
     }
 }

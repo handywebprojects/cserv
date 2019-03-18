@@ -2,6 +2,7 @@
 
 from traceback import print_exc as pe
 import io
+import uuid
 
 #############################################
 
@@ -9,6 +10,7 @@ from utils.chess import getvariantboard, variantnameofvariantkey, variantkeyofva
 from utils.chess import treeofgamenode, sanext
 import chess
 import chess.pgn
+from utils.http import geturl
 
 #############################################
 
@@ -17,6 +19,7 @@ class Req:
         self.kind = None
         self.id = None
         self.uid = "mockuser"
+        self.username = "Anonymous"
         self.newgame = False
         self.variantkey = "standard"
         self.fen = None
@@ -30,7 +33,8 @@ class Req:
 
     def res(self, obj):        
         obj["id"] = self.id
-        obj["uid"] = self.uid
+        obj["uid"] = self.uid        
+        obj["username"] = self.username
         return obj
 
 def serverlogic(reqobj):    
@@ -266,5 +270,72 @@ def mergepgn(req):
     clientgame = clientgames[req.uid]        
     clientgame.mergepgn(req.pgn)
     return req.res(setgame(clientgame))
+
+#############################################
+
+def auth(req):
+    return req.res({
+        "kind": "auth",
+        "status": "ok"
+    })
+
+users = {}
+
+class User:
+    def __init__(self, uid):
+        global users
+        self.uid = uid        
+        if self.uid in users:
+            self.username = users[self.uid].username
+            self.code = users[self.uid].code
+        else:
+            users[self.uid] = self
+            self.username = "Anonymous"
+            self.code = None
+
+    def setusername(self, username):
+        self.username = username
+        return self
+
+    def setcode(self, code):
+        self.code = code
+        return self
+
+    def __repr__(self):
+        return "[ User {} {} {} ]".format(self.uid, self.username, self.code)
+
+def signin(req):
+    global users    
+    print("signing in with username [ {} ]".format(req.username))
+
+    genuuid = uuid.uuid1().hex
+    code = uuid.uuid1().hex
+
+    user = User(genuuid).setcode(code)
+
+    return req.res({
+        "kind": "signin",
+        "status": "ok",
+        "setuid": genuuid,
+        "setcode": code
+    })
+
+def vercode(req):
+    req.uid = req.tempuid
+
+    print("verifying code for uid [ {} ]".format(req.uid))
+
+    user = User(req.uid)
+
+    print(user)
+
+    profile = geturl("https://lichess.org/@/{}".format(req.username), verbose = True)
+
+    verified = user.code in profile
+
+    return req.res({
+        "kind": "codeverified",
+        "verified": verified
+    })
 
 #############################################

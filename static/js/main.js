@@ -22,7 +22,8 @@ function buildapp(){
     let board = Board("mainboard", {})
 
     let maintabpane = TabPane("maintabpane", {fillwindow:true}).settabs([        
-        Tab("board", "Board", board),        
+        Tab("board", "Board", board),  
+        ProfileTab(),
         Tab("about", "About", Div().pad(5).html("Chess server."))    
     ]).selecttab("board", USE_STORED_IF_AVAILABLE)
 

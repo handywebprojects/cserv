@@ -37,9 +37,39 @@ class ConnWidget_ extends e{
         clients[this.id] = this
     }
 
+    uidpath(){
+        return `${this.id}/uid`
+    }
+
+    usernamepath(){
+        return `${this.id}/username`
+    }
+
+    getuid(){
+        return localStorage.getItem(this.uidpath()) || "mockuser"
+    }
+
+    setuid(uid){
+        localStorage.setItem(this.uidpath(), uid)
+    }
+
+    isanon(){
+        return this.getuid() == "mockuser"
+    }
+
+    getusername(){
+        return localStorage.getItem(this.usernamepath()) || "Anonymous"
+    }
+
+    setusername(username){
+        localStorage.setItem(this.usernamepath(), username)
+    }
+
     sioreq(reqobj){
 	//console.log(reqobj)
         reqobj.id = this.id
+        reqobj.uid = this.getuid()
+        reqobj.username = this.getusername()
         rawsocket.emit("sioreq", reqobj)
     }
 
@@ -364,4 +394,85 @@ class Board_ extends ConnWidget_{
     }
 }
 function Board(id, args){return new Board_(id, args)}
+////////////////////////////////////////////////////////////////////
+class ProfileConnWidget_ extends ConnWidget_{
+    constructor(siorescallback){        
+        super("profileconn")
+        this.siorescallback = siorescallback        
+    }
+
+    siores(resobj){        
+        this.siorescallback(resobj)
+    }
+}
+function ProfileConnWidget(siorescallback){return new ProfileConnWidget_(siorescallback)}
+
+class ProfileTab_ extends Tab_{
+    getuid(){return this.connwidget.getuid()}
+    setuid(uid){this.connwidget.setuid(uid)}
+    getusername(){return this.connwidget.getusername()}
+    setusername(username){this.connwidget.setusername(username)}
+    isanon(){return this.connwidget.isanon()}
+    isuser(){return !this.connwidget.isanon()}
+
+    signin(){
+        this.setusername(this.usernameinput.getText())
+        this.sioreq({
+            "kind": "signin"
+        })
+    }
+
+    vercode(){
+        this.sioreq({
+            "kind": "vercode",
+            "tempuid": this.tempuid
+        })
+    }
+
+    build(){        
+        if(this.isuser()){
+            this.setcaption(this.getusername())
+            this.captiondiv.c("#070")    
+        }else{
+            this.setcaption("Anonymous")
+            this.captiondiv.c("#700")    
+        }        
+
+        if(this.isanon()){
+            if(this.code){
+                this.contentelement.x.html("Insert this code into your profile:")
+                this.vercodebutton = Button("Verify code", this.vercode.bind(this)).ml(12).fs(18)
+                this.contentelement.a(Div().mar(5).disp("flex").ai("center").a(CopyText({width: 600, dopaste: false}).setText(this.code), this.vercodebutton))
+            }else{
+                this.usernameinput = FeaturedTextInput("Username:")
+                this.signinbutton = Button("Sign in", this.signin.bind(this)).h(30).fs(16).ml(10)
+                this.contentelement.x.a(Div().disp("flex").ai("center").a(this.usernameinput, this.signinbutton))
+            }            
+        }
+    }
+
+    siores(resobj){
+        console.log("profile received", resobj)
+        let kind = resobj.kind
+        if(kind=="signin"){
+            this.code = resobj.setcode
+            this.tempuid = resobj.setuid
+        }        
+        this.build()
+    }
+
+    constructor(){
+        super("profile", "Profile", Div())        
+        this.connwidget = ProfileConnWidget(this.siores.bind(this))
+        this.contentelement.pad(5)
+        this.sioreq({
+            "kind": "auth"
+        })
+    }
+
+    sioreq(reqobj){
+        this.connwidget.sioreq(reqobj)
+    }
+}
+function ProfileTab(){return new ProfileTab_()}
 ////////////////////////////////////////////////////////////////////

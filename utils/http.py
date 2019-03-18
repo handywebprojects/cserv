@@ -32,4 +32,13 @@ def posturl(url, headers = {}, fields = None, jsonobj = None, asjson = False, bo
         return loads(content)
     return content
 
+def geturl(url, verbose = False):
+    if verbose:
+        print("getting {}".format(url))
+    r = http.request("GET", url)
+    content = r.data.decode("utf-8")
+    if verbose:
+        print("get returned content of length {}".format(len(content)))
+    return content
+
 #############################################
