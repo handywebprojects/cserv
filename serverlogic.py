@@ -226,8 +226,8 @@ def makealgebmove(req):
     global clientgames, thegame, thegamepgn_docref, themoves, thegamepgn_dict, MAX_NO_MOVES_PER_DAY
     if getnomoves(req.username) >= MAX_NO_MOVES_PER_DAY:
         return req.res(setgame(thegame), "Failed. You have already made {} moves in one day.".format(MAX_NO_MOVES_PER_DAY))
-    clientgame = clientgames[req.uid]    
     if req.user.verified:        
+        clientgame = clientgames[req.uid]    
         turn = clientgame.currentnode.board().turn
         if ( ((turn == chess.WHITE) and (req.user.side == "white")) or ((turn == chess.BLACK) and (req.user.side == "black")) ):            
             move = chess.Move.from_uci(req.algeb)
@@ -255,18 +255,26 @@ def makealgebmove(req):
             return req.res(setgame(clientgame))                
         else:
             return req.res(setgame(clientgame), "You are only allowrd to make moves for {}.".format(req.user.side))                
-    else:
-        clientgame.makealgebmove(req.algeb)
-        return req.res(setgame(clientgame))        
+    else:        
+        return req.res(setgame(thegame), "Log in to make moves.")        
 
 def setline(req):
-    global clientgames
-    clientgame = clientgames[req.uid]    
-    clientgame.setline(req.line)
+    global clientgames, thegame
+    #clientgame = clientgames[req.uid]    
+    if req.user.verified:
+        thegame.setline(req.line)    
+        clientgame = thegame
+    else:
+        clientgame = ClientGame(thegame.variantkey, thegame.pgn(), None)
+        clientgame.setline(req.line)    
     return req.res(setgame(clientgame))
 
 def delmove(req):
     global clientgames
+    if not req.user.verified:
+        return req.res({
+            "kind": "delmovefailed"
+        }, "Log in for using board controls.")
     clientgame = clientgames[req.uid]        
     #clientgame.delmove()
     clientgame.backmove()
@@ -274,24 +282,40 @@ def delmove(req):
 
 def tobegin(req):
     global clientgames
+    if not req.user.verified:
+        return req.res({
+            "kind": "tobeginfailed"
+        }, "Log in for using board controls.")
     clientgame = clientgames[req.uid]        
     clientgame.tobegin()
     return req.res(setgame(clientgame))
 
 def backmove(req):
     global clientgames
+    if not req.user.verified:
+        return req.res({
+            "kind": "backmovefailed"
+        }, "Log in for using board controls.")
     clientgame = clientgames[req.uid]        
     clientgame.backmove()
     return req.res(setgame(clientgame))
 
 def forwardmove(req):
     global clientgames
+    if not req.user.verified:
+        return req.res({
+            "kind": "forwardmovefailed"
+        }, "Log in for using board controls.")
     clientgame = clientgames[req.uid]        
     clientgame.forwardmove()
     return req.res(setgame(clientgame))
 
 def toend(req):
     global clientgames
+    if not req.user.verified:
+        return req.res({
+            "kind": "toendfailed"
+        }, "Log in for using board controls.")
     clientgame = clientgames[req.uid]        
     clientgame.toend()
     return req.res(setgame(clientgame))
