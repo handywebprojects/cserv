@@ -6,6 +6,7 @@ import uuid
 import firebase_admin
 from firebase_admin import credentials, firestore
 import time
+from os import environ
 
 #############################################
 
@@ -17,9 +18,11 @@ from utils.http import geturl
 
 #############################################
 
+BANLIST = environ.get("BANLIST", "").split(",")
+
 themoves = []
 
-MAX_NO_MOVES_PER_DAY = 5
+MAX_NO_MOVES_PER_DAY = environ.get("MAXMOVES", 5)
 
 def getnomoves(username, rangeday = 1):
     global themoves
@@ -339,7 +342,7 @@ except:
 
 class Req:
     def __init__(self, reqobj = {}):
-        global users
+        global users, BANLIST
         self.kind = None
         self.id = None
         self.uid = "mockuser"
@@ -360,6 +363,10 @@ class Req:
                 self.user.getdb()
             else:
                 self.user = users[self.uid]
+
+        if self.user.username in BANLIST:
+            print("user banned")
+            self.user.verified = False
         
         print("request", self.kind, self.user)
 
@@ -490,8 +497,8 @@ def signin(req):
         "setcode": code
     })
 
-MIN_GAMES = 100
-MIN_RATING = 2000
+MIN_GAMES = environ.get("MINGAMES", 100)
+MIN_RATING = environ.get("MINRATING", 2000)
 
 def vercode(req):    
     global userscoll, MIN_GAMES, MIN_RATING
@@ -570,5 +577,13 @@ def getgame(req):
         return req.res({
             "kind": "getgamefailed"
         })
+
+#############################################
+
+print("server initialized")
+print("BANLIST", BANLIST)
+print("MAXMOVES", MAX_NO_MOVES_PER_DAY)
+print("MINGAMES", MIN_GAMES)
+print("MINRATING", MIN_RATING)
 
 #############################################

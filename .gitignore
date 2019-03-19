@@ -1,4 +1,6 @@
 
+/backup/*
+
 *.swp
 
 s/toenv.bat

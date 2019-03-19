@@ -7,6 +7,17 @@ from traceback import print_exc as pe
 
 ###################################################
 
+def create_dir(path, verbose = False):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        if verbose:
+            print("created directory {}".format(path))
+    else:
+        if verbose:
+            print("{} exists".format(path))
+
+###################################################
+
 def write_string_to_file(path, content):
     try:
         with open(path,"w") as outfile:
