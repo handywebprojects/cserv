@@ -98,6 +98,9 @@ function stripsan(san){
     return san
 }
 
+MOVEDIV_WIDTH = 100
+MOVEDIV_HEIGHT = 32
+
 class GameNode_ extends e{
 	constructor(){
 		super("div")
@@ -106,7 +109,7 @@ class GameNode_ extends e{
 		this.par = null
 		this.san = null
 		this.childs = {}
-		this.movediv = Div().bc("#eee").mw(100).w(100).mh(35).h(35).disp("flex").fd("column").ai("center").jc("space-around").cp()
+		this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).disp("flex").fd("column").ai("center").jc("space-around").cp()
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
 		this.a(this.movediv, this.childsdiv)
 	}
@@ -126,7 +129,7 @@ class GameNode_ extends e{
     }
 	build(){
         let captiondiv = Div().html(this.san ? this.san : "root")
-        let userdiv = Div()        
+        let userdiv = Div().w(MOVEDIV_WIDTH - 10).ellipsis().ta("center")        
         for(let item of (this.themoves || [])){            
             if(item.line == this.linestr()){
                 userdiv.html(item.username)

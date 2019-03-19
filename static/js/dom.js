@@ -5,6 +5,20 @@ class e{
         this.e = document.createElement(kind)
     }
 
+    wsp(whitespace){
+        this.e.style.whiteSpace = whitespace
+		return this
+    }
+
+    tovf(textoverflow){
+        this.e.style.textOverflow = textoverflow
+		return this
+    }
+
+    ellipsis(){
+        return this.ovf("hidden").wsp("nowrap").tovf("ellipsis")
+    }
+
 	scrollIntoView(param){
 		this.e.scrollIntoView(param)
 		return this
