@@ -19,6 +19,7 @@ from utils.http import geturl
 #############################################
 
 BANLIST = environ.get("BANLIST", "").split(",")
+EXEMPTLIST = environ.get("EXEMPTLIST", "").split(",")
 
 themoves = []
 
@@ -501,30 +502,33 @@ MIN_GAMES = int(environ.get("MINGAMES", 100))
 MIN_RATING = int(environ.get("MINRATING", 2000))
 
 def vercode(req):    
-    global userscoll, MIN_GAMES, MIN_RATING
+    global userscoll, MIN_GAMES, MIN_RATING, EXEMPTLIST
     #print("verifying code for uid [ {} ]".format(req.tempuid))
 
     user = getuser(req.tempuid)
 
     #print(user)
 
-    try:
-        userdata = geturl("https://lichess.org/api/user/{}".format(req.username), asjson = True, verbose = True)
-        print(userdata["perfs"])
-        atomicperf = userdata["perfs"]["atomic"]
-        if atomicperf["games"] < MIN_GAMES:
+    if not ( user.username in EXEMPTLIST ):
+        try:
+            userdata = geturl("https://lichess.org/api/user/{}".format(req.username), asjson = True, verbose = True)
+            print(userdata["perfs"])
+            atomicperf = userdata["perfs"]["atomic"]
+            if atomicperf["games"] < MIN_GAMES:
+                return req.res({
+                "kind": "vercodefailed"
+            }, "Verification failed. Your account has less than {} games.".format(MIN_GAMES))    
+            if atomicperf["rating"] < MIN_RATING:
+                return req.res({
+                "kind": "vercodefailed"
+            }, "Verification failed. Your atomic rating is less than {}.".format(MIN_RATING))    
+        except:
+            pe()
             return req.res({
-            "kind": "vercodefailed"
-        }, "Verification failed. Your account has less than {} games.".format(MIN_GAMES))    
-        if atomicperf["rating"] < MIN_RATING:
-            return req.res({
-            "kind": "vercodefailed"
-        }, "Verification failed. Your atomic rating is less than {}.".format(MIN_RATING))    
-    except:
-        pe()
-        return req.res({
-            "kind": "vercodefailed"
-        }, "Verification failed. You dont't seem to be an atomic player.")
+                "kind": "vercodefailed"
+            }, "Verification failed. You dont't seem to be an atomic player.")
+    else:
+        print("user in exemptlist", EXEMPTLIST)
 
     profile = geturl("https://lichess.org/@/{}".format(req.username), verbose = True)
 
@@ -582,6 +586,7 @@ def getgame(req):
 
 print("server initialized")
 print("BANLIST", BANLIST)
+print("EXEMPTLIST", EXEMPTLIST)
 print("MAXMOVES", MAX_NO_MOVES_PER_DAY)
 print("MINGAMES", MIN_GAMES)
 print("MINRATING", MIN_RATING)
