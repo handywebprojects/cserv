@@ -472,13 +472,34 @@ def signin(req):
         "setcode": code
     })
 
+MIN_GAMES = 100
+MIN_RATING = 2000
+
 def vercode(req):    
-    global userscoll
+    global userscoll, MIN_GAMES, MIN_RATING
     #print("verifying code for uid [ {} ]".format(req.tempuid))
 
     user = getuser(req.tempuid)
 
     #print(user)
+
+    try:
+        userdata = geturl("https://lichess.org/api/user/{}".format(req.username), asjson = True, verbose = True)
+        print(userdata["perfs"])
+        atomicperf = userdata["perfs"]["atomic"]
+        if atomicperf["games"] < MIN_GAMES:
+            return req.res({
+            "kind": "vercodefailed"
+        }, "Verification failed. Your account has less than {} games.".format(MIN_GAMES))    
+        if atomicperf["rating"] < MIN_RATING:
+            return req.res({
+            "kind": "vercodefailed"
+        }, "Verification failed. Your atomic rating is less than {}.".format(MIN_RATING))    
+    except:
+        pe()
+        return req.res({
+            "kind": "vercodefailed"
+        }, "Verification failed. You dont't seem to be an atomic player.")
 
     profile = geturl("https://lichess.org/@/{}".format(req.username), verbose = True)
 
