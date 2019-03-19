@@ -1169,7 +1169,8 @@ class BasicBoard_ extends e{
             let sq = new Square(file, rank)
             let sc = this.squarecoord(sq)
             let sqdiv = Div().po("absolute").w(this.squaresize).h(this.squaresize).tl(sc)
-            sqdiv.bc( (((file+rank)%2)==0) ? "#777" : "#fff" ).op(0.2)            
+            let light = (((file+rank)%2)==1)            
+            sqdiv.bc( light ? "#777" : "#fff" ).op(0.2)            
             this.boardcontainer.a(sqdiv)
         }
         this.outerboardcontainer.bimg(this.backgroundimagepath)
