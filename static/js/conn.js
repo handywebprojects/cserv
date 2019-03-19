@@ -130,7 +130,7 @@ class GameNode_ extends e{
 	build(){
         let captiondiv = Div().html(this.san ? this.san : "root")
         let userdiv = Div().w(MOVEDIV_WIDTH - 10).ellipsis().ta("center")        
-        for(let item of (this.themoves || [])){            
+        for(let item of (this.parboard.themoves || [])){            
             if(item.line == this.linestr()){
                 userdiv.html(item.username)
                 break
@@ -166,15 +166,14 @@ class GameNode_ extends e{
 			})
 		}
 	}
-	fromobj(parboard, obj, par, gensan, themoves){
+	fromobj(parboard, obj, par, gensan){
 		this.parboard = parboard
 		this.childs = {}
 		this.par = par
-        this.san = gensan
-        this.themoves = themoves
+        this.san = gensan        
 		for(let childsan in obj){
 			let childobj = obj[childsan]
-			this.childs[childsan] = GameNode().fromobj(this.parboard, childobj, this, childsan, this.themoves)
+			this.childs[childsan] = GameNode().fromobj(this.parboard, childobj, this, childsan)
 		}
 		return this
 	}
@@ -279,7 +278,7 @@ class Board_ extends ConnWidget_{
 
 	buildtree(){
 		//this.treediv.x.html("<pre>" + JSON.stringify(this.tree, null, 2) + "</pre>")
-		this.rootgamenode = GameNode().fromobj(this, this.tree, null, null, this.themoves)
+		this.rootgamenode = GameNode().fromobj(this, this.tree, null, null)
 		setseed(1)
 		this.treediv.x.a(this.rootgamenode.build())
 		this.rootgamenode.highlight(this.line)
