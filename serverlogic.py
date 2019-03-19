@@ -205,7 +205,7 @@ def getboard(req):
     return req.res(setgame(clientgame))
 
 def makealgebmove(req):
-    global clientgames, thegame, thegamepgn_docref, themoves
+    global clientgames, thegame, thegamepgn_docref, themoves, thegamepgn_dict
     clientgame = clientgames[req.uid]    
     if req.user.verified:        
         turn = clientgame.currentnode.board().turn
@@ -215,6 +215,10 @@ def makealgebmove(req):
                 return req.res(setgame(clientgame), "Move already made.".format(req.user.side))                
             clientgame.makealgebmove(req.algeb)                        
             linestr = "_".join(clientgame.getline())
+            print("refreshing moves, current number of moves", len(themoves))
+            thegamepgn_dict = thegamepgn_docref.get().to_dict()
+            themoves = thegamepgn_dict.get("moves", [])
+            print("refreshing moves done, number of moves", len(themoves))
             themoves.append({
                 "username": req.user.username,
                 "time": time.time(),
