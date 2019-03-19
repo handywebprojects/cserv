@@ -22,7 +22,7 @@ BANLIST = environ.get("BANLIST", "").split(",")
 
 themoves = []
 
-MAX_NO_MOVES_PER_DAY = environ.get("MAXMOVES", 5)
+MAX_NO_MOVES_PER_DAY = int(environ.get("MAXMOVES", 5))
 
 def getnomoves(username, rangeday = 1):
     global themoves
@@ -497,8 +497,8 @@ def signin(req):
         "setcode": code
     })
 
-MIN_GAMES = environ.get("MINGAMES", 100)
-MIN_RATING = environ.get("MINRATING", 2000)
+MIN_GAMES = int(environ.get("MINGAMES", 100))
+MIN_RATING = int(environ.get("MINRATING", 2000))
 
 def vercode(req):    
     global userscoll, MIN_GAMES, MIN_RATING
