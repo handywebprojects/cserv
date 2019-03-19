@@ -19,6 +19,20 @@ from utils.http import geturl
 
 themoves = []
 
+MAX_NO_MOVES_PER_DAY = 5
+
+def getnomoves(username, rangeday = 1):
+    global themoves
+    rangesec = rangeday * 24 * 60 * 60
+    nowsec = time.time()
+    cnt = 0
+    for item in themoves:
+        if item["username"] == username:
+            elapsed = nowsec - item["time"]
+            if elapsed < rangesec:
+                cnt += 1
+    return cnt
+
 class ClientGame:
     def fen(self):
         return self.currentnode.board().fen()
@@ -205,7 +219,9 @@ def getboard(req):
     return req.res(setgame(clientgame))
 
 def makealgebmove(req):
-    global clientgames, thegame, thegamepgn_docref, themoves, thegamepgn_dict
+    global clientgames, thegame, thegamepgn_docref, themoves, thegamepgn_dict, MAX_NO_MOVES_PER_DAY
+    if getnomoves(req.username) >= MAX_NO_MOVES_PER_DAY:
+        return req.res(setgame(thegame), "Failed. You have already made {} moves in one day.".format(MAX_NO_MOVES_PER_DAY))
     clientgame = clientgames[req.uid]    
     if req.user.verified:        
         turn = clientgame.currentnode.board().turn
@@ -382,6 +398,8 @@ def connected(req):
 def auth(req):
     global users
     user = User(req.uid).getdb()
+
+    print("auth", user, "nomoves", getnomoves(user.username))
 
     return req.res({
         "kind": "auth",
