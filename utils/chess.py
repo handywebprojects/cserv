@@ -53,6 +53,15 @@ def sanext(board, move):
     sanext += san
     return sanext
 
+def stripsan(san):
+    if ".." in san:
+        parts = san.split("..")
+        return parts[1]
+    if "." in san:
+        parts = san.split(".")
+        return parts[1]
+    return san
+
 def treeofgamenode(gamenode):
         obj = {}
         for childnode in gamenode.variations:

@@ -10,7 +10,7 @@ import time
 #############################################
 
 from utils.chess import getvariantboard, variantnameofvariantkey, variantkeyofvariantname
-from utils.chess import treeofgamenode, sanext
+from utils.chess import treeofgamenode, sanext, stripsan
 import chess
 import chess.pgn
 from utils.http import geturl
@@ -46,6 +46,26 @@ class ClientGame:
             board.set_fen(fen)        
         self.rootnode = chess.pgn.Game.from_board(board)
         self.currentnode = self.rootnode        
+
+    def frommoveitems(self, variantkey, moveitems):
+        self.variantkey = variantkey
+        board = getvariantboard(self.variantkey)        
+        self.rootnode = chess.pgn.Game.from_board(board)
+        self.rootnode.headers["Event"] = "Theoretical game"
+        self.rootnode.headers["Site"] = "https://cserv.herokuapp.com"
+        self.rootnode.headers["Date"] = "2019.03.18"
+        self.rootnode.headers.pop("White", None)
+        self.rootnode.headers.pop("Black", None)
+        self.rootnode.headers.pop("Round", None)
+        self.rootnode.headers.pop("Result", None)        
+        for moveitem in moveitems:
+            linestr = moveitem["line"]
+            moves = linestr.split("_")            
+            self.currentnode = self.rootnode
+            for move in moves:
+                san = stripsan(move)
+                self.makesanmove(san)
+        return self
 
     def mergegame(self, dstgame, srcgame):        
         srccomment = srcgame.comment
@@ -193,14 +213,15 @@ def makealgebmove(req):
             move = chess.Move.from_uci(req.algeb)
             if clientgame.currentnode.has_variation(move):
                 return req.res(setgame(clientgame), "Move already made.".format(req.user.side))                
-            clientgame.makealgebmove(req.algeb)            
-            newpgn = clientgame.pgn()
+            clientgame.makealgebmove(req.algeb)                        
             linestr = "_".join(clientgame.getline())
             themoves.append({
                 "username": req.user.username,
                 "time": time.time(),
                 "line": linestr
             })
+            newgame = ClientGame("atomic", None, None).frommoveitems("atomic", themoves)
+            newpgn = newgame.pgn()            
             thegamepgn_docref.update({
                 "pgn": newpgn,
                 "moves": themoves
@@ -254,8 +275,8 @@ def toend(req):
 def mergepgn(req):
     global clientgames
     clientgame = clientgames[req.uid]        
-    clientgame.mergepgn(req.pgn)
-    return req.res(setgame(clientgame))
+    #clientgame.mergepgn(req.pgn)
+    return req.res(setgame(clientgame), "You are not allowed to merge PGNs.")
 
 #############################################
 
