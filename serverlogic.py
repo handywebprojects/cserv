@@ -482,9 +482,10 @@ def vercode(req):
 
 def setside(req):
     if req.user.verified:
-        return req.res({
-            "kind": "setsidefailed"
-        }, "You are not allowed to change sides.")
+        if req.user.side:
+            return req.res({
+                "kind": "setsidefailed"
+            }, "You are not allowed to change sides.")
         #print("set side", req.side, req.user)
         req.user.setside(req.side).setdb()
         return req.res({
