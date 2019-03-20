@@ -515,7 +515,7 @@ class CopyTextArea_ extends e{
     }
 
     getText(){
-        return this.texarea.getText()
+        return this.textarea.getText()
     }
 
     copy(){

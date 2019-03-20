@@ -196,7 +196,7 @@ class ClientGame:
 clientgames = {}
 
 def setgame(clientgame):    
-    global themoves
+    global themoves, storedmessages
     fen = clientgame.fen()
     pgn = clientgame.pgn()
     variantkey = clientgame.variantkey
@@ -209,7 +209,8 @@ def setgame(clientgame):
         "pgn": pgn,
         "tree": tree,
         "line": line,
-        "themoves": themoves
+        "themoves": themoves,
+        "messageids": list(storedmessages.keys())
     }
 
 def getboard(req):
@@ -330,7 +331,29 @@ def mergepgn(req):
 
 USERS_PATH = "users"
 MOVES_PATH = "moves"
+MESSAGES_PATH = "messages"
 THEGAMEDATA_PATH = "thegamedata"
+
+storedmessages = {}
+
+messagescoll = None
+
+def getmessages():
+    global messagescoll
+
+    try:
+        messagesiter = messagescoll.get()    
+
+        messages = {}
+
+        for doc in messagesiter:
+            data = doc.to_dict()
+            messages[doc.id] = data
+
+        return messages
+    except:
+        print("could not get messages")
+        return {}
 
 try:
     cred = credentials.Certificate('firebase/sacckey.json')
@@ -340,6 +363,7 @@ try:
 
     userscoll = db.collection(USERS_PATH)
     movescoll = db.collection(MOVES_PATH)
+    messagescoll = db.collection(MESSAGES_PATH)
     gamedatacoll = db.collection(THEGAMEDATA_PATH)
     thegamepgn_docref = gamedatacoll.document("pgn")
     thegamepgn_dict = thegamepgn_docref.get().to_dict()
@@ -359,6 +383,10 @@ try:
     thegame = ClientGame("atomic", thegamepgn, None)
     print("thegame", thegame)
 
+    storedmessages = getmessages()
+
+    print("num messageids", len(storedmessages.keys()))
+
 except:
     pe()
     print("firebase could not be initialized")
@@ -377,6 +405,7 @@ class Req:
         self.fen = None
         self.pgn = None
         self.line = []
+        self.messageid = None
         try:
             for key, value in reqobj.items():
                 self.__dict__[key] = value
@@ -428,10 +457,12 @@ def connected(req):
 #############################################
 
 def auth(req):
-    global users
+    global users, storedmessages
     user = User(req.uid).getdb()
 
     print("auth", user, "nomoves", getnomoves(user.username))
+
+    storedmessages = getmessages()
 
     return req.res({
         "kind": "auth",
@@ -605,6 +636,34 @@ def getgame(req):
         return req.res({
             "kind": "getgamefailed"
         })
+
+def savemessage(req):
+    global messagescoll, storedmessages
+    if not req.user.verified:
+        return req.res({
+            "kind": "savemessagefailed"
+        })
+    else:
+        msgobj = {
+            "username": req.username,
+            "message": req.message,
+            "time": time.time()
+        }
+        messagescoll.document(req.messageid).set(msgobj)
+        storedmessages[req.messageid] = msgobj
+        print("message saved", msgobj)
+        return req.res({
+            "kind": "messagesaved"
+        }, "Your message has been saved.")
+
+def getmessage(req):
+    global messagescoll
+    mdict = messagescoll.document(req.messageid).get().to_dict()
+    return req.res({
+        "kind": "setmessage",
+        "messageid": req.messageid,
+        "message": mdict
+    })
 
 #############################################
 
