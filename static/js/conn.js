@@ -102,6 +102,13 @@ MOVEDIV_WIDTH = 100
 MOVEDIV_HEIGHT = 32
 
 class GameNode_ extends e{
+    gearclicked(ev){        
+        ev.stopPropagation()
+        if(this.parboard.currpopup) this.parboard.currpopup.disp("none")
+        this.gearon = !this.gearon
+        if(this.gearon) this.popupdiv.disp("flex").ai("center").jc("space-around").zi(10)
+        this.parboard.currpopup = this.popupdiv
+    }
 	constructor(){
 		super("div")
 		this.disp("flex").ai("center").fd("row").ac("unselectable").mar(1)
@@ -109,7 +116,9 @@ class GameNode_ extends e{
 		this.par = null
 		this.san = null
 		this.childs = {}
-		this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).disp("flex").fd("column").ai("center").jc("space-around").cp()
+        this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).disp("flex").fd("column").ai("center").jc("space-around").cp().por()
+        this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
+        this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).bc("#eee").disp("none").curlyborder().bc("#ffc")
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
 		this.a(this.movediv, this.childsdiv)
 	}
@@ -132,11 +141,21 @@ class GameNode_ extends e{
         let userdiv = Div().w(MOVEDIV_WIDTH - 10).ellipsis().ta("center")        
         for(let item of (this.parboard.themoves || [])){            
             if(item.line == this.linestr()){
-                userdiv.html(item.username)
+                this.item = item
+                userdiv.html(this.item.username)
                 break
             }
         }
-		this.movediv.x.a(captiondiv, userdiv).bds("solid").bdw(1).bdc("#777")
+        this.movediv.x.a(captiondiv, userdiv, this.geardiv, this.popupdiv).bds("solid").bdw(1).bdc("#777")
+        if(this.item){
+            this.popupdiv.x.a(Div().fw("bold").html(new Date(this.item.time*1000).toLocaleString()))
+            let elapsedh = (new Date().getTime() - this.item.time*1000)/1000/60/60            
+            if(elapsedh < 24){
+                this.geardiv.c("#0f0").blink()
+            }else{
+                this.geardiv.c("#777")
+            }
+        }
 		this.movediv.ae("mousedown", this.parboard.gamenodeclicked.bind(this.parboard, this.line()))
         this.childsdiv.x
         if((Object.keys(this.childs).length > 1)||(!this.par)){

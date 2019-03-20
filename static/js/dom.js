@@ -175,6 +175,10 @@ class e{
         return this
     }
 
+    blink(){
+        return this.ac("blink_me")
+    }
+
     cp(){
         this.e.style.cursor = "pointer"
         return this
@@ -183,6 +187,14 @@ class e{
     po(position){
         this.e.style.position = position
         return this
+    }
+
+    por(){
+        return this.po("relative")
+    }
+
+    poa(){
+        return this.po("absolute")
     }
 
     jc(justifycontent){
