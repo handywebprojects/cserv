@@ -177,15 +177,15 @@ class GameNode_ extends e{
         }
         this.movediv.x.a(captiondiv, userdiv, this.geardiv, this.popupdiv, this.mgeardiv, this.mpopupdiv).bds("solid").bdw(1).bdc("#777")
         try{               
-            if(this.parboard.messageids.includes(this.linestr())){                
-                this.mgeardiv.bc("#00f")
+            if(this.parboard.messageids.includes(this.linestr())){                                
+                this.mgeardiv.shc("#00f")
             }
         }catch(err){}
         if(this.item){
             this.popupdiv.x.a(Div().fw("bold").html(new Date(this.item.time*1000).toLocaleString()))
             let elapsedh = (new Date().getTime() - this.item.time*1000)/1000/60/60            
             if(elapsedh < 24){
-                this.geardiv.c("#0f0").blink()
+                this.geardiv.c("#070").blink().bc("#ccc")
             }else{
                 this.geardiv.c("#777")
             }            

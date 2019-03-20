@@ -5,6 +5,15 @@ class e{
         this.e = document.createElement(kind)
     }
 
+    tsh(textshadow){
+        this.e.style.textShadow = textshadow
+		return this
+    }
+
+    shc(shadowcolor){        
+		return this.c("transparent").tsh(`0 0 0 ${shadowcolor}`)
+    }
+
     wsp(whitespace){
         this.e.style.whiteSpace = whitespace
 		return this
