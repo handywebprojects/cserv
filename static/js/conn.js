@@ -100,6 +100,8 @@ function stripsan(san){
 
 MOVEDIV_WIDTH = 100
 MOVEDIV_HEIGHT = 32
+MESSAGE_HEIGHT = 210
+NOVUM_LIMIT_HOURS = 24
 
 class GameNode_ extends e{
     gearclicked(ev){        
@@ -134,7 +136,7 @@ class GameNode_ extends e{
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
         this.mgeardiv = Div().poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
-        this.mpopupdiv = Div().poa().t(15).l(-10).w(3* MOVEDIV_WIDTH).h(200).disp("none").curlyborder().bc("#ffc")
+        this.mpopupdiv = Div().poa().t(15).l(-10).w(3* MOVEDIV_WIDTH).h(MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
         this.mpopupdiv.ae("mousedown", function(ev){ev.stopPropagation()})
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
 		this.a(this.movediv, this.childsdiv)
@@ -176,15 +178,19 @@ class GameNode_ extends e{
             }
         }
         this.movediv.x.a(captiondiv, userdiv, this.geardiv, this.popupdiv, this.mgeardiv, this.mpopupdiv).bds("solid").bdw(1).bdc("#777")
-        try{               
-            if(this.parboard.messageids.includes(this.linestr())){                                
-                this.mgeardiv.shc("#00f")
+        try{   
+            let messageitem = this.parboard.messageids[this.linestr()]            
+            if(messageitem){                                
+                this.mgeardiv.shc("#700")
+                let messagetime = messageitem["time"]
+                if(elapsedhour(messagetime*1000) < NOVUM_LIMIT_HOURS) this.mgeardiv.shc("#00f")
+            }else{
+                this.mgeardiv.shc("#aaa")
             }
         }catch(err){}
         if(this.item){
-            this.popupdiv.x.a(Div().fw("bold").html(new Date(this.item.time*1000).toLocaleString()))
-            let elapsedh = (new Date().getTime() - this.item.time*1000)/1000/60/60            
-            if(elapsedh < 24){
+            this.popupdiv.x.a(Div().fw("bold").html(new Date(this.item.time*1000).toLocaleString()))            
+            if(elapsedhour(this.item.time*1000) < NOVUM_LIMIT_HOURS){
                 this.geardiv.c("#070").blink().bc("#ccc")
             }else{
                 this.geardiv.c("#777")
@@ -192,8 +198,26 @@ class GameNode_ extends e{
             if(this.item.username == localStorage.getItem("profileconn/username")){                
                 this.userme = true                
             }
+            this.minfodiv = Div().h(15).disp("flex").ai("center")
+            try{   
+                let messageitem = this.parboard.messageids[this.linestr()]            
+                let messagetimems = messageitem["time"]*1000
+                if(messageitem){                                
+                    this.minfodiv.a(
+                        Div().html(new Date(messagetimems).toLocaleString()).c("#007").fs(11)
+                    )
+                    let ehr = Math.floor(elapsedhour(messagetimems))                    
+                    if(ehr < NOVUM_LIMIT_HOURS) this.minfodiv.a(
+                        Div().fw("bold").ml(15).html(`${ehr} hour(s) ago`).c("#770").fs(12)
+                    )
+                }
+            }catch(err){
+                this.minfodiv.h(0)
+                this.mpopupdiv.h(MESSAGE_HEIGHT)
+            }
+            this.mpopupdiv.x.a(this.minfodiv)            
             this.messageedit = CopyTextArea({width: 2.8*MOVEDIV_WIDTH,height:175})            
-            this.mpopupdiv.x.a(this.messageedit)
+            this.mpopupdiv.a(this.messageedit)            
             this.mcontroldiv = Div().disp("flex")                        
             if(this.userme) this.mcontroldiv.a(Button("Save message", this.savemessage.bind(this)))            
             this.mcontroldiv.a(Button("Close", this.mgearclicked.bind(this)))

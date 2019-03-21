@@ -215,5 +215,26 @@ ONE_MINUTE = 60 * ONE_SECOND
 ONE_HOUR = 60 * ONE_MINUTE
 ONE_DAY = 24 * ONE_HOUR
 
+function elapsed(time1ms, time2ms){
+    let diff = Math.abs(time1ms - (time2ms || new Date().getTime()) )
+    return diff
+}
+
+function elapsedsec(time1ms, time2ms){
+    return elapsed(time1ms, time2ms) / ONE_SECOND
+}
+
+function elapsedmin(time1ms, time2ms){
+    return elapsed(time1ms, time2ms) / ONE_MINUTE
+}
+
+function elapsedhour(time1ms, time2ms){
+    return elapsed(time1ms, time2ms) / ONE_HOUR
+}
+
+function elapsedday(time1ms, time2ms){
+    return elapsed(time1ms, time2ms) / ONE_DAY
+}
+
 ////////////////////////////////////////////////////////////////////
 

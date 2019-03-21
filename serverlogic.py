@@ -210,7 +210,7 @@ def setgame(clientgame):
         "tree": tree,
         "line": line,
         "themoves": themoves,
-        "messageids": list(storedmessages.keys())
+        "messageids": getmessageids()
     }
 
 def getboard(req):
@@ -355,6 +355,15 @@ def getmessages():
         print("could not get messages")
         return {}
 
+def getmessageids():
+    global storedmessages
+    messageids = {}
+    for key, item in storedmessages.items():
+        messageids[key] = {
+            "time": item["time"]
+        }
+    return messageids
+
 try:
     cred = credentials.Certificate('firebase/sacckey.json')
     default_app = firebase_admin.initialize_app(cred)    
@@ -385,7 +394,7 @@ try:
 
     storedmessages = getmessages()
 
-    print("num messageids", len(storedmessages.keys()))
+    print("num stored messages", len(storedmessages.keys()))
 
 except:
     pe()
