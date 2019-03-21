@@ -12,6 +12,14 @@ function getelse(obj, key, defaultvalue){
 
 ////////////////////////////////////////////////////////////////////
 
+try{
+    var markdownconverter = new showdown.Converter()
+}catch(err){
+    console.log("could not create markdown converter")
+}
+
+////////////////////////////////////////////////////////////////////
+
 //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
 seed = 1
 function random(){

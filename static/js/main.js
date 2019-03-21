@@ -7,7 +7,7 @@ class MainConnWidget extends ConnWidget_{
     siores(resobj){
         //console.log("main received", resobj)
         if(resobj.kind == "connectedack"){
-            buildapp()
+            buildapp(resobj)
         }
     }
 }
@@ -27,11 +27,19 @@ function usercallback(){
     })
 }
 
-function buildapp(){
+function buildapp(resobj){
+    try{
+        readmehtml = markdownconverter.makeHtml(resobj.readme_md)
+        console.log(readmehtml)
+    }catch(err){
+        console.log(err)
+        readme = "Chess Server."
+    }
+
     let maintabpane = TabPane("maintabpane", {fillwindow:true}).settabs([        
         Tab("board", "Board", board),  
         ProfileTab({usercallback: usercallback}),
-        Tab("about", "About", Div().pad(5).html("Chess server."))    
+        Tab("about", "About", Div().pl(15).html(readmehtml))    
     ]).selecttab("board", USE_STORED_IF_AVAILABLE)
 
     se("root", maintabpane)

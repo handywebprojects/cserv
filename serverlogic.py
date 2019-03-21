@@ -15,6 +15,7 @@ from utils.chess import treeofgamenode, sanext, stripsan
 import chess
 import chess.pgn
 from utils.http import geturl
+from utils.file import read_string_from_file
 
 #############################################
 
@@ -460,7 +461,8 @@ def serverlogic(reqobj):
 
 def connected(req):
     return req.res({
-        "kind": "connectedack"
+        "kind": "connectedack",
+        "readme_md": read_string_from_file("ReadMe.md", "Chess Server.")
     })
 
 #############################################
