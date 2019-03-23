@@ -359,7 +359,7 @@ class Board_ extends ConnWidget_{
     buildvariantcombo(){        
         this.variantcombo = Select().setoptions(VARIANT_KEYS, this.basicboard.variantkey)
         this.variantcombo.ae("change", this.variantcombochanged.bind(this)).fs(14).pad(2)
-        this.variantcombohook.x.a(this.variantcombo)
+        //this.variantcombohook.x.a(this.variantcombo)
     }
 
 	buildtree(){
@@ -401,14 +401,22 @@ class Board_ extends ConnWidget_{
     buildcontrolpanel(){
         this.controlpanel = Div().disp("flex").ai("center").jc("space-around").bc("#eef").h(this.controlheight - this.fenheight).w(this.boardwidth)
         this.variantcombohook = Div()
-        this.controlpanel.a(this.variantcombohook)
+        //this.controlpanel.a(this.variantcombohook)
         this.buildvariantcombo()        
-        this.controlpanel.a(CButton("✖", this.del.bind(this)).c("#a00"))
+        this.prompiececombo = Select().setoptions([
+            ["", "Promotion piece"],
+            ["q", "Queen"],
+            ["r", "Rook"],
+            ["b", "Bishop"],
+            ["n", "Knight"],
+        ])
+        this.controlpanel.a(this.prompiececombo)
+        //this.controlpanel.a(CButton("✖", this.del.bind(this)).c("#a00"))
         this.controlpanel.a(CButton("⏮", this.tobegin.bind(this)).mb(3))
         this.controlpanel.a(CButton("◀", this.back.bind(this)).c("#0a0"))
         this.controlpanel.a(CButton("▶", this.forward.bind(this)).c("#0a0"))
         this.controlpanel.a(CButton("⏭", this.toend.bind(this)).mb(3))
-        this.controlpanel.a(CButton("↩", this.reset.bind(this)).fs(35).c("#f00").mt(8))
+        //this.controlpanel.a(CButton("↩", this.reset.bind(this)).fs(35).c("#f00").mt(8))
         this.controlpanel.a(CButton("↕", this.flip.bind(this)).fs(25))        
         this.controlpanel.a(Button("Analyze lichess", this.analyzelichess.bind(this)))        
         this.controlpanelhook.x.a(this.controlpanel)
@@ -460,10 +468,12 @@ class Board_ extends ConnWidget_{
     }
 
     dragmovecallback(m){
-        let algeb = m.toalgeb()        
+        let algeb = m.toalgeb()     
+        let prompiece = this.prompiececombo.v()
+        algeb += prompiece
         this.sioreq({
             "kind": "makealgebmove",
-            "algeb": m.toalgeb()
+            "algeb": algeb
         })
     }
 
