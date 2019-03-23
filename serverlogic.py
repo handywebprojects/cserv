@@ -129,8 +129,10 @@ class ClientGame:
                 self.currentnode = self.currentnode.variation(move)                
             except:
                 self.currentnode = self.currentnode.add_main_variation(move)                            
+            return True
         else:
             print("illegal move")
+            return False
 
     def makesanmove(self, san):
         move = self.currentnode.board().parse_san(san)
@@ -235,7 +237,9 @@ def makealgebmove(req):
             move = chess.Move.from_uci(req.algeb)
             if clientgame.currentnode.has_variation(move):
                 return req.res(setgame(clientgame), "Move already made.".format(req.user.side))                
-            clientgame.makealgebmove(req.algeb)                        
+            moveok = clientgame.makealgebmove(req.algeb)                        
+            if not moveok:
+                return req.res(setgame(clientgame), "Illegal move.".format(req.user.side))                
             linestr = "_".join(clientgame.getline())
             print("refreshing moves, current number of moves", len(themoves))
             thegamepgn_dict = thegamepgn_docref.get().to_dict()

@@ -436,8 +436,8 @@ class Board_ extends ConnWidget_{
         this.guitabpane = TabPane(this.id + "/guitabpane", {width:this.guiwidth, height:this.totalheight()}).settabs([
             Tab("tree", "Tree", this.treediv),            
             Tab("pgn", "PGN", this.pgndiv),   
-            Tab("mergepgn", "Merge PGN", this.mergepgndiv),                     
-            Tab("book", "Book", this.bookdiv = Div())
+            //Tab("mergepgn", "Merge PGN", this.mergepgndiv),                     
+            //Tab("book", "Book", this.bookdiv = Div())
         ]).selecttab("tree", USE_STORED_IF_AVAILABLE)        
         this.pgntext = CopyTextArea({
             width:this.guiwidth - getScrollBarWidth(),
