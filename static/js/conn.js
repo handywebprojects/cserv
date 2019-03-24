@@ -108,14 +108,14 @@ class GameNode_ extends e{
         ev.stopPropagation()
         if(this.parboard.currpopup) this.parboard.currpopup.disp("none")
         this.gearon = !this.gearon
-        if(this.gearon) this.popupdiv.disp("flex").ai("center").jc("space-around").zi(10)
+        if(this.gearon) this.popupdiv.disp("flex").fd("column").ai("center").jc("space-around").zi(10).scrollIntoView({block: "center", inline: "center", behavior: "smooth"})
         this.parboard.currpopup = this.popupdiv
     }
     mgearclicked(ev){        
         if(ev) ev.stopPropagation()
         if(this.parboard.currmpopup) this.parboard.currmpopup.disp("none")
         this.mgearon = !this.mgearon
-        if(this.mgearon) this.mpopupdiv.disp("flex").fd("column").ai("center").jc("space-around").zi(20)
+        if(this.mgearon) this.mpopupdiv.disp("flex").fd("column").ai("center").jc("space-around").zi(20).scrollIntoView({block: "center", inline: "center", behavior: "smooth"})
         this.parboard.currmpopup = this.mpopupdiv
         if(!this.parboard.msgdisp) this.parboard.msgdisp = {}
         let messageid = this.linestr()
@@ -190,7 +190,10 @@ class GameNode_ extends e{
         }catch(err){}
         if(this.item){
             this.popupdiv.x.a(Div().fw("bold").html(new Date(this.item.time*1000).toLocaleString()))            
-            if(elapsedhour(this.item.time*1000) < NOVUM_LIMIT_HOURS){
+            let ehr = Math.floor(elapsedhour(this.item.time*1000))
+            if(ehr < NOVUM_LIMIT_HOURS){
+                this.popupdiv.h(50)
+                this.popupdiv.a(Div().c("#770").fw("bold").html(`${ehr} hour(s) ago`))            
                 this.geardiv.c("#070").blink().bc("#ccc")
             }else{
                 this.geardiv.c("#777")
@@ -399,7 +402,7 @@ class Board_ extends ConnWidget_{
     }
 
     buildcontrolpanel(){
-        this.controlpanel = Div().disp("flex").ai("center").jc("space-around").bc("#eef").h(this.controlheight - this.fenheight).w(this.boardwidth)
+        this.controlpanel = Div().disp("flex").ai("center").jc("space-around").bimg("static/img/backgrounds/marble.jpg").h(this.controlheight - this.fenheight).w(this.boardwidth)
         this.variantcombohook = Div()
         //this.controlpanel.a(this.variantcombohook)
         this.buildvariantcombo()        

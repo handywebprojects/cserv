@@ -887,12 +887,16 @@ class SplitPane_ extends e{
         // direction of div arrangement
         this.flowdir = this.dir == "row" ? "column" : "row"
         this.controlpanel = Div().bc("#eee").disp("flex").fd(this.dir).ai("center").jc("space-around")
-        this.contentdiv = Div().bc("#eff").ovf("scroll")
+        this.contentdiv = Div().ovf("scroll")
+        this.bimg = args.bimg
+        if(this.bimg) this.contentdiv.bimg(this.bimg)
+        this.bcol = args.bcol //|| "#eff"
+        if(this.bcol) this.contentdiv.bc(this.bcol)
         this.disp("flex").fd(this.flowdir)
         this.a(this.controlpanel, this.contentdiv)
         this.width = args.width || 600
         this.height = args.height || 400
-        this.controlheight = args.controlheight || ( this.isrow ? 40 : 120 )
+        this.controlheight = args.controlheight || ( this.isrow ? 40 : 120 )        
         this.contentelement = Div()
         this.resize(this.width, this.height)
         if(args.fillwindow){

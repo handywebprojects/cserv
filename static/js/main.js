@@ -36,7 +36,7 @@ function buildapp(resobj){
         readme = "Chess Server."
     }
 
-    let maintabpane = TabPane("maintabpane", {fillwindow:true}).settabs([        
+    let maintabpane = TabPane("maintabpane", {fillwindow:true, bimg: "static/img/backgrounds/marble.jpg"}).settabs([        
         Tab("board", "Board", board),  
         ProfileTab({usercallback: usercallback}),
         Tab("about", "About", Div().pl(15).html(readmehtml))    
