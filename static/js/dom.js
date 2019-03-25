@@ -5,6 +5,16 @@ class e{
         this.e = document.createElement(kind)
     }
 
+    float(float){
+        this.e.style.float = float
+		return this
+    }
+
+    transform(transform){
+        this.e.style.transform = transform
+		return this
+    }
+
     tsh(textshadow){
         this.e.style.textShadow = textshadow
 		return this
@@ -1048,7 +1058,57 @@ class Vect{
         this.x = x
         this.y = y
     }
+
+    p(v){
+        return V(this.x + v.x, this.y + v.y)
+    }
+
+    m(v){
+        return V(this.x - v.x, this.y - v.y)
+    }
+
+    l(){
+        return Math.sqrt(this.x*this.x + this.y*this.y)
+    }
+
+    s(s){
+        return V(s*this.x, s*this.y)
+    }
 }
+function V(x,y){return new Vect(x,y)}
+
+class Arrow_ extends Div_{
+    constructor(from, to, argsopt){
+        super()
+        let args = argsopt || {}
+        let diff = to.m(from)
+        let l = diff.l()
+        let linewidth = args.linewidth || 6
+        let pointwidth = args.pointwidth || 16
+        let pointheight = args.pointheight || 16
+        let color = args.color || "#007"        
+        this.h(pointwidth).w(l).bc("#faa")
+        let lineheight = l - pointheight        
+        this.linediv = Div().h(linewidth).w(lineheight).float("left")
+        this.linediv.mt((pointwidth - linewidth)/2).bc(color)
+        this.pointdiv = Div().float("right")
+        this.pointdiv.e.style.borderTop = `${pointwidth/2}px solid transparent`
+        this.pointdiv.e.style.borderBottom = `${pointwidth/2}px solid transparent`
+        this.pointdiv.e.style.borderLeft = `${pointheight}px solid ${color}`
+        let rot = Math.asin((to.y - from.y)/l)        
+        if(to.x<from.x) rot = Math.PI-rot
+        console.log(rot/Math.PI*180)        
+        this.transform(`rotate(${rot/Math.PI*180}deg)`)        
+        this.a(this.linediv, this.pointdiv)                
+        console.log(rot)
+        let shifty = l/2*Math.sin(rot) - pointwidth/2
+        let shiftx = - (l/2 - l/2*Math.cos(rot))
+        
+        this.t(from.y + shifty).l(from.x + shiftx)
+        this.poa()
+    }
+}
+function Arrow(from, to, args){return new Arrow_(from, to, args)}
 
 class Piece{
     constructor(kind, color){
