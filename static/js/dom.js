@@ -1081,11 +1081,13 @@ class Arrow_ extends Div_{
     constructor(from, to, argsopt){
         super()
         let args = argsopt || {}
+        let opacity = args.opacity || 1
+        this.op(opacity)
         let diff = to.m(from)
         let l = diff.l()
-        let linewidth = args.linewidth || 6
-        let pointwidth = args.pointwidth || 16
-        let pointheight = args.pointheight || 16
+        let linewidth = args.linewidth || 12
+        let pointwidth = args.pointwidth || 36
+        let pointheight = args.pointheight || 36
         let color = args.color || "#ff7"        
         this.h(pointwidth).w(l)
         let lineheight = l - pointheight        
