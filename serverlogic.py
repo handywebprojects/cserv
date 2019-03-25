@@ -187,6 +187,14 @@ class ClientGame:
             testboard.push(move)
         return line
 
+    def getalgebline(self):
+        testboard = self.rootnode.board()
+        line = []
+        for move in self.currentlinemoves():            
+            line.append(move.uci())
+            testboard.push(move)
+        return line
+
     def currentlinepgn(self):
         testboard = self.rootnode.board()
         for move in self.currentlinemoves():
@@ -205,6 +213,7 @@ def setgame(clientgame):
     variantkey = clientgame.variantkey
     tree = treeofgamenode(clientgame.rootnode)
     line = clientgame.getline()
+    algebline = clientgame.getalgebline()
     return {
         "kind": "setboard",
         "variantkey": variantkey,
@@ -212,6 +221,7 @@ def setgame(clientgame):
         "pgn": pgn,
         "tree": tree,
         "line": line,
+        "algebline": algebline,
         "themoves": themoves,
         "messageids": getmessageids()
     }

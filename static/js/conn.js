@@ -515,6 +515,9 @@ class Board_ extends ConnWidget_{
             this.fentext.setText(fen)
             this.tree = obj.tree
             this.line = obj.line
+            this.algebline = obj.algebline            
+            if(this.algebline.length > 0) this.basicboard.addalgebmovearrow(this.algebline.pop())
+            if(this.algebline.length > 0) this.basicboard.addalgebmovearrow(this.algebline.pop(), {color: "#77a"})
             this.themoves = obj.themoves
             this.messageids = obj.messageids
             this.buildtree()

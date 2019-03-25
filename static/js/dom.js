@@ -1086,8 +1086,8 @@ class Arrow_ extends Div_{
         let linewidth = args.linewidth || 6
         let pointwidth = args.pointwidth || 16
         let pointheight = args.pointheight || 16
-        let color = args.color || "#007"        
-        this.h(pointwidth).w(l).bc("#faa")
+        let color = args.color || "#ff7"        
+        this.h(pointwidth).w(l)
         let lineheight = l - pointheight        
         this.linediv = Div().h(linewidth).w(lineheight).float("left")
         this.linediv.mt((pointwidth - linewidth)/2).bc(color)
@@ -1096,11 +1096,9 @@ class Arrow_ extends Div_{
         this.pointdiv.e.style.borderBottom = `${pointwidth/2}px solid transparent`
         this.pointdiv.e.style.borderLeft = `${pointheight}px solid ${color}`
         let rot = Math.asin((to.y - from.y)/l)        
-        if(to.x<from.x) rot = Math.PI-rot
-        console.log(rot/Math.PI*180)        
+        if(to.x<from.x) rot = Math.PI-rot             
         this.transform(`rotate(${rot/Math.PI*180}deg)`)        
-        this.a(this.linediv, this.pointdiv)                
-        console.log(rot)
+        this.a(this.linediv, this.pointdiv)                        
         let shifty = l/2*Math.sin(rot) - pointwidth/2
         let shiftx = - (l/2 - l/2*Math.cos(rot))
         
@@ -1131,6 +1129,27 @@ class Piece{
 }
 
 class BasicBoard_ extends e{
+    squarefromalgeb(algeb){        
+        let file = algeb.charCodeAt(0) - "a".charCodeAt(0)
+        let rank = this.LAST_SQUARE - ( algeb.charCodeAt(1) - "1".charCodeAt(0) )
+        return new Square(file, rank)
+    }
+
+    movefromalgeb(algeb){
+        return new Move(this.squarefromalgeb(algeb.slice(0,2)), this.squarefromalgeb(algeb.slice(2,4)))
+    }
+
+    addmovearrow(move, args){        
+        let fromc = this.squarecoord(move.fromsq).p(V(this.squaresize/2,this.squaresize/2))
+        let toc = this.squarecoord(move.tosq).p(V(this.squaresize/2,this.squaresize/2))
+        this.boardcontainer.a(Arrow(fromc, toc, args))
+    }
+
+    addalgebmovearrow(algeb, args){        
+        let move = this.movefromalgeb(algeb)        
+        this.addmovearrow(move, args)
+    }
+
     squarecoord(sq){
         let fsq = new Square(sq.file, sq.rank)
         if(this.flip){
