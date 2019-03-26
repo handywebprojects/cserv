@@ -11,7 +11,8 @@ from ansi import *
 ###################################################
 
 VERSIONED_DIRS = [
-    "static/js"
+    "static/js",
+    "static/css"
 ]
 
 HTML_DIRS = [
