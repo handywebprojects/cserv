@@ -135,7 +135,7 @@ class GameNode_ extends e{
         this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).disp("flex").fd("column").ai("center").jc("space-around").cp().por()
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
-        this.mgeardiv = Div().poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
+        this.mgeardiv = Div().pad(1).poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
         this.mpopupdiv = Div().poa().t(15).l(-10).w(3 * MOVEDIV_WIDTH).h(2 *  MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
         this.mpopupdiv.ae("mousedown", function(ev){ev.stopPropagation()})
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
@@ -187,9 +187,9 @@ class GameNode_ extends e{
         try{   
             let messageitem = this.parboard.messageids[this.linestr()]            
             if(messageitem){                                
-                this.mgeardiv.shc("#700")
+                this.mgeardiv.shc("#700").bc("#ffa")
                 let messagetime = messageitem["time"]
-                if(elapsedhour(messagetime*1000) < NOVUM_LIMIT_HOURS) this.mgeardiv.shc("#00f")
+                if(elapsedhour(messagetime*1000) < NOVUM_LIMIT_HOURS) this.mgeardiv.shc("#00f").bc("#ffa")
             }else{
                 this.mgeardiv.shc("#aaa")
             }
