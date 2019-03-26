@@ -27,14 +27,8 @@ function usercallback(){
     })
 }
 
-function buildapp(resobj){
-    try{
-        readmehtml = markdownconverter.makeHtml(resobj.readme_md)
-        console.log(readmehtml)
-    }catch(err){
-        console.log(err)
-        readme = "Chess Server."
-    }
+function buildapp(resobj){    
+    readmehtml = md2html(resobj.readme_md, "Chess Server.")
 
     let maintabpane = TabPane("maintabpane", {fillwindow:true, bimg: "static/img/backgrounds/marble.jpg"}).settabs([        
         Tab("board", "Board", board),  

@@ -136,7 +136,7 @@ class GameNode_ extends e{
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
         this.mgeardiv = Div().poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
-        this.mpopupdiv = Div().poa().t(15).l(-10).w(3* MOVEDIV_WIDTH).h(MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
+        this.mpopupdiv = Div().poa().t(15).l(-10).w(3 * MOVEDIV_WIDTH).h(2 *  MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
         this.mpopupdiv.ae("mousedown", function(ev){ev.stopPropagation()})
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
 		this.a(this.movediv, this.childsdiv)
@@ -164,8 +164,14 @@ class GameNode_ extends e{
         })
         this.mgearclicked()
     }
-    setmessage(message){
-        this.messageedit.setText(message["message"])
+    setmessage(message){        
+        let msg = message["message"]
+        this.messageedit.setText(msg)
+        let mhtml = md2html(msg)        
+        this.messagemd.html(mhtml)
+    }
+    messageditchanged(){
+        this.messagemd.html(md2html(this.messageedit.getText()))
     }
 	build(){
         let captiondiv = Div().html(this.san ? this.san : "root")
@@ -216,11 +222,13 @@ class GameNode_ extends e{
                 }
             }catch(err){
                 this.minfodiv.h(0)
-                this.mpopupdiv.h(MESSAGE_HEIGHT)
+                this.mpopupdiv.h(2 * MESSAGE_HEIGHT)
             }
             this.mpopupdiv.x.a(this.minfodiv)            
-            this.messageedit = CopyTextArea({width: 2.8*MOVEDIV_WIDTH,height:175})            
-            this.mpopupdiv.a(this.messageedit)            
+            this.messagemd = Div().w(2.8 * MOVEDIV_WIDTH).h(MESSAGE_HEIGHT - 35).ovf("scroll")
+            this.messageedit = CopyTextArea({width: 2.8 * MOVEDIV_WIDTH,height:MESSAGE_HEIGHT - 35})            
+            this.messageedit.textarea.ae("keyup", this.messageditchanged.bind(this))
+            this.mpopupdiv.a(this.messagemd, this.messageedit)            
             this.mcontroldiv = Div().disp("flex")                        
             if(this.userme) this.mcontroldiv.a(Button("Save message", this.savemessage.bind(this)))            
             this.mcontroldiv.a(Button("Close", this.mgearclicked.bind(this)))

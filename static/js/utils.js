@@ -18,6 +18,16 @@ try{
     console.log("could not create markdown converter")
 }
 
+function md2html(md, def){
+    try{
+        html = markdownconverter.makeHtml(md)
+        return html        
+    }catch(err){
+        console.log(err)
+        return def || md
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 
 //https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
