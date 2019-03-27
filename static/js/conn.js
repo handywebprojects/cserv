@@ -100,8 +100,9 @@ function stripsan(san){
 
 MOVEDIV_WIDTH = 100
 MOVEDIV_HEIGHT = 32
-MESSAGE_HEIGHT = 210
+MESSAGE_HEIGHT = 250
 NOVUM_LIMIT_HOURS = 24
+MESSAGE_WIDTH_FACTOR = 4
 
 class GameNode_ extends e{
     gearclicked(ev){        
@@ -137,7 +138,7 @@ class GameNode_ extends e{
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
         this.mgeardiv = Div().pad(1).poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
-        this.mpopupdiv = Div().poa().t(15).l(-10).w(3 * MOVEDIV_WIDTH).h(2 *  MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
+        this.mpopupdiv = Div().poa().t(15).l(-10).w(MESSAGE_WIDTH_FACTOR * MOVEDIV_WIDTH).h(2 *  MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
         this.mpopupdiv.ae("mousedown", function(ev){ev.stopPropagation()})
 		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")
 		this.a(this.movediv, this.childsdiv)
@@ -226,8 +227,8 @@ class GameNode_ extends e{
                 this.mpopupdiv.h(2 * MESSAGE_HEIGHT)
             }
             this.mpopupdiv.x.a(this.minfodiv)            
-            this.messagemd = Div().w(2.8 * MOVEDIV_WIDTH).h(MESSAGE_HEIGHT - 35).ovf("scroll")
-            this.messageedit = CopyTextArea({width: 2.8 * MOVEDIV_WIDTH,height:MESSAGE_HEIGHT - 35})            
+            this.messagemd = Div().w(0.95 * MESSAGE_WIDTH_FACTOR * MOVEDIV_WIDTH).h(MESSAGE_HEIGHT - 35).ovf("scroll")
+            this.messageedit = CopyTextArea({width: 0.95 * MESSAGE_WIDTH_FACTOR * MOVEDIV_WIDTH,height:MESSAGE_HEIGHT - 35})            
             this.messageedit.textarea.ae("keyup", this.messageditchanged.bind(this))
             this.mpopupdiv.a(this.messagemd, this.messageedit)            
             this.mcontroldiv = Div().disp("flex")                        
