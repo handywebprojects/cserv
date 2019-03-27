@@ -524,7 +524,7 @@ class Board_ extends ConnWidget_{
             this.tree = obj.tree
             this.line = obj.line
             this.algebline = obj.algebline            
-            if(this.algebline.length > 0) this.basicboard.addalgebmovearrow(this.algebline.pop(), {opacity: 0.4})
+            if(this.algebline.length > 0) this.basicboard.addalgebmovearrow(this.algebline.pop(), {opacity: 0.6})
             if(this.algebline.length > 0) this.basicboard.addalgebmovearrow(this.algebline.pop(), {opacity: 0.4, color: "#77a"})
             this.themoves = obj.themoves
             this.messageids = obj.messageids
