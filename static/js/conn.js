@@ -127,18 +127,19 @@ class GameNode_ extends e{
     }
 	constructor(){
 		super("div")
-		this.disp("flex").ai("center").fd("row").ac("unselectable").mar(1)
+		this.disp("flex").ai("center").fd("row").ac("unselectable")
 		this.parboard = null
 		this.par = null
 		this.san = null
 		this.childs = {}
-        this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).disp("flex").fd("column").ai("center").jc("space-around").cp().por()
+        this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT)
+        this.movediv.disp("flex").fd("column").ai("center").jc("space-around").cp().por().ml(1).mr(1)
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
         this.mgeardiv = Div().pad(1).poa().t(1).l(3).html("💭").cp().ae("mousedown", this.mgearclicked.bind(this))        
         this.mpopupdiv = Div().poa().t(15).l(-10).w(3 * MOVEDIV_WIDTH).h(2 *  MESSAGE_HEIGHT + 25).disp("none").curlyborder().bc("#ffc")
         this.mpopupdiv.ae("mousedown", function(ev){ev.stopPropagation()})
-		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")		
+		this.childsdiv = Div().disp("flex").ai("left").jc("space-around").fd("column").bc("#eee")
 		this.a(this.movediv, this.childsdiv)
 	}
 	line(fullsan){
@@ -236,9 +237,12 @@ class GameNode_ extends e{
         }
 		this.movediv.ae("mousedown", this.parboard.gamenodeclicked.bind(this.parboard, this.line()))
         this.childsdiv.x
+        this.mar(1)
         if((Object.keys(this.childs).length > 1)||(!this.par)){
             this.childsrgb = randrgb()        
-            this.mult = 1    
+            this.childsdiv.pad(5)
+            this.childsdiv.ml(5).curlyborder()
+            this.mult = 1                
         }else{
             this.childsrgb = this.par.childsrgb                        
             this.mult = this.par.mult + 1
@@ -386,6 +390,11 @@ class Board_ extends ConnWidget_{
         window.open(url, "_blank")
     }
 
+    analyzefbserv(){
+        let url = `https://fbserv2.herokuapp.com/analysis/${this.basicboard.variantkey}/${this.basicboard.fen}`
+        window.open(url, "_blank")
+    }
+
     mergepgnpastecallback(pgn){
         this.sioreq({
             "kind": "mergepgn",
@@ -429,7 +438,8 @@ class Board_ extends ConnWidget_{
         this.controlpanel.a(CButton("⏭", this.toend.bind(this)).mb(3))
         //this.controlpanel.a(CButton("↩", this.reset.bind(this)).fs(35).c("#f00").mt(8))
         this.controlpanel.a(CButton("↕", this.flip.bind(this)).fs(25))        
-        this.controlpanel.a(Button("Analyze lichess", this.analyzelichess.bind(this)))        
+        this.controlpanel.a(Button("🔎 lichess", this.analyzelichess.bind(this)))        
+        this.controlpanel.a(Button("🔎 fbserv", this.analyzefbserv.bind(this)))        
         this.controlpanelhook.x.a(this.controlpanel)
     }
 
