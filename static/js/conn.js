@@ -418,6 +418,7 @@ class Board_ extends ConnWidget_{
             movestrdisp = movestrdisp.replace(/_/g, " ")
             let usernamediv = Div().html(username).c("#770")
             let timediv = Div().html(new Date(time*1000).toLocaleString()).c("#070")
+            if(elapsedhour(time*1000)<NOVUM_LIMIT_HOURS) timediv.blink()
             let smallcontainer = Div().disp("flex").fd("column").w(200).mw(200).pad(5)
             smallcontainer.a(usernamediv, timediv)
             let movediv = Div().html(username).html(movestrdisp)
