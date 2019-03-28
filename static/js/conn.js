@@ -270,7 +270,7 @@ class GameNode_ extends e{
 		this.movediv.bc("#afa").bdc("#000")
 		if(!line) return
 		if(line.length > 0){
-			let san = line.shift()
+            let san = line.shift()            
 			this.childs[san].highlight(line)
 		}else{
 			this.movediv.scrollIntoView({
@@ -394,7 +394,38 @@ class Board_ extends ConnWidget_{
 		this.rootgamenode = GameNode().fromobj(this, this.tree, null, null)
 		setseed(1)
 		this.treediv.x.a(this.rootgamenode.build())
-		this.rootgamenode.highlight(this.line)
+        this.rootgamenode.highlight(this.line)
+        
+        this.buildmoves()
+    }
+
+    movelistclicked(movestr){        
+        this.guitabpane.selecttab("tree")
+        let line = movestr.split("_").map(x => stripsan(x))
+        this.sioreq({
+			kind: "setline",
+			line: line
+		})
+    }
+
+    buildmoves(){
+        this.movesdiv.x
+        for(let item of (this.themoves || []).slice().reverse()){
+            let username = item.username
+            let time = item.time
+            let movestr = item.line
+            let movestrdisp = movestr.replace(/[0-9]+\.\./g, "")
+            movestrdisp = movestrdisp.replace(/_/g, " ")
+            let usernamediv = Div().html(username).c("#770")
+            let timediv = Div().html(new Date(time*1000).toLocaleString()).c("#070")
+            let smallcontainer = Div().disp("flex").fd("column").w(200).mw(200).pad(5)
+            smallcontainer.a(usernamediv, timediv)
+            let movediv = Div().html(username).html(movestrdisp)
+            let container = Div().disp("flex").pad(3).curlyborder().mar(3).cp().bc("#eee")
+            container.ae("mousedown", this.movelistclicked.bind(this, movestr))
+            container.a(smallcontainer, movediv)
+            this.movesdiv.a(container)
+        }
     }
     
     analyzelichess(){
@@ -466,8 +497,10 @@ class Board_ extends ConnWidget_{
         this.pgndiv = Div()
         this.mergepgndiv = Div()
         this.treediv = Div().ff("monospace").pad(5)
+        this.movesdiv = Div().ff("monospace").pad(3)
         this.guitabpane = TabPane(this.id + "/guitabpane", {width:this.guiwidth, height:this.totalheight()}).settabs([
             Tab("tree", "Tree", this.treediv),            
+            Tab("moves", "Moves", this.movesdiv),            
             Tab("pgn", "PGN", this.pgndiv),   
             //Tab("mergepgn", "Merge PGN", this.mergepgndiv),                     
             //Tab("book", "Book", this.bookdiv = Div())
