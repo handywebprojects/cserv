@@ -133,7 +133,7 @@ class GameNode_ extends e{
 		this.par = null
 		this.san = null
 		this.childs = {}
-        this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT)
+        this.movediv = Div().bc("#eee").mw(MOVEDIV_WIDTH).w(MOVEDIV_WIDTH).mh(MOVEDIV_HEIGHT).h(MOVEDIV_HEIGHT).curlyborder()
         this.movediv.disp("flex").fd("column").ai("center").jc("space-around").cp().por().ml(1).mr(1)
         this.geardiv = Div().poa().t(1).l(MOVEDIV_WIDTH - 14).html("⚙").cp().ae("mousedown", this.gearclicked.bind(this))
         this.popupdiv = Div().poa().t(15).l(-10).w(2* MOVEDIV_WIDTH).h(40).disp("none").curlyborder().bc("#ffc")
@@ -176,7 +176,18 @@ class GameNode_ extends e{
         this.messagemd.html(md2html(this.messageedit.getText()))
     }
 	build(){
-        let captiondiv = Div().html(this.san ? this.san : "root")
+        let captiondiv = Div().html(this.san ? this.san : "root").pl(2).pr(2)
+        if(this.san){
+            let cbc = "#fff"
+            let cc = "#000"
+            let fw = "initial"
+            if(this.san.includes("..")){
+                cbc = "#000"
+                cc = "#fff"            
+            }
+            captiondiv.fw("bold")        
+            captiondiv.bc(cbc).c(cc)
+        }
         let userdiv = Div().w(MOVEDIV_WIDTH - 10).ellipsis().ta("center")        
         for(let item of (this.parboard.themoves || [])){            
             if(item.line == this.linestr()){

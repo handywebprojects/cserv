@@ -1078,6 +1078,10 @@ class Vect{
 function V(x,y){return new Vect(x,y)}
 
 class Arrow_ extends Div_{
+    setcolor(color){
+        this.linediv.bc(color)
+        this.pointdiv.e.style.borderLeft = `${this.pointheight}px solid ${color}`
+    }
     constructor(from, to, argsopt){
         super()
         let args = argsopt || {}
@@ -1088,6 +1092,7 @@ class Arrow_ extends Div_{
         let linewidth = args.linewidth || 12
         let pointwidth = args.pointwidth || 36
         let pointheight = args.pointheight || 36
+        this.pointheight = pointheight
         let color = args.color || "#ff7"        
         this.h(pointwidth).w(l)
         let lineheight = l - pointheight        
@@ -1203,12 +1208,19 @@ class BasicBoard_ extends e{
                 pdiv.ae("drop", this.piecedrop.bind(this, sq))
                 this.piececontainer.a(pdiv)
             }            
-        }
+        }        
+        let relturn = this.flip ? this.blackturn : this.whiteturn
+        let onturnarrow = relturn ? this.bottomturnarrow : this.topturnarrow
+        let offturnarrow = relturn ? this.topturnarrow : this.bottomturnarrow
+        onturnarrow.disp("initial").setcolor(this.whiteturn ? "#fff" : "#000")
+        offturnarrow.disp("none")
     }
 
     setfromfen(fen){        
         this.fen = fen
         let fenparts = fen.split(" ")
+        this.whiteturn = fenparts[1] == "w"
+        this.blackturn = !this.whiteturn
         let rankfens = fenparts[0].split("/")
         for(let i=0;i<this.BOARD_AREA;i++) this.rep[i] = new Piece()
         let i = 0
@@ -1229,7 +1241,7 @@ class BasicBoard_ extends e{
                     this.rep[i++] = new Piece(kind, color)
                 }
             }
-        }
+        }        
         this.buildpieces()
     }
 
@@ -1300,6 +1312,16 @@ class BasicBoard_ extends e{
         this.piececontainer.t(this.innerboardmargin).l(this.innerboardmargin)
         this.innerboardcontainer.a(this.piececontainer)
         this.x.a(this.maincontainer)
+        let turnarrowmiddlex = this.squaresize*8+2*this.innerboardmargin+1.3*this.outerboardmargin
+        this.fullboardmargin = this.innerboardmargin + this.outerboardmargin
+        let bottomturnarrowfrom = V(turnarrowmiddlex, this.squaresize*8+this.fullboardmargin)
+        let bottomturnarrowto = V(turnarrowmiddlex, this.squaresize*7+this.fullboardmargin)
+        let topturnarrowfrom = V(turnarrowmiddlex, this.squaresize*0+this.fullboardmargin)
+        let topturnarrowto = V(turnarrowmiddlex, this.squaresize*1+this.fullboardmargin)
+        let turnarrowargs = {linewidth: this.outerboardmargin/2, pointwidth: this.outerboardmargin, pointheight: this.squaresize/2}
+        this.bottomturnarrow = Arrow(bottomturnarrowfrom, bottomturnarrowto, turnarrowargs).disp("none")
+        this.topturnarrow = Arrow(topturnarrowfrom, topturnarrowto, turnarrowargs).disp("none")
+        this.outerboardcontainer.a(this.bottomturnarrow, this.topturnarrow)
     }
 
     buildall(){
