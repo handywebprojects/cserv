@@ -5,6 +5,11 @@ class e{
         this.e = document.createElement(kind)
     }
 
+    txd(textdecoration){
+        this.e.style.textDecoration = textdecoration
+		return this
+    }
+
     float(float){
         this.e.style.float = float
 		return this

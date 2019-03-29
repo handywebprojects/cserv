@@ -408,6 +408,10 @@ class Board_ extends ConnWidget_{
 		})
     }
 
+    usernameclicked(username){
+        window.open("https://lichess.org/@/" + username, "_blank")
+    }
+
     buildmoves(){
         this.movesdiv.x
         for(let item of (this.themoves || []).slice().reverse()){
@@ -416,14 +420,15 @@ class Board_ extends ConnWidget_{
             let movestr = item.line
             let movestrdisp = movestr.replace(/[0-9]+\.\./g, "")
             movestrdisp = movestrdisp.replace(/_/g, " ")
-            let usernamediv = Div().html(username).c("#770")
-            let timediv = Div().html(new Date(time*1000).toLocaleString()).c("#070")
+            let usernamediv = Div().html(username).c("#770").cp().txd("underline")
+            usernamediv.ae("mousedown", this.usernameclicked.bind(this, username))
+            let timediv = Div().html(new Date(time*1000).toLocaleString()).c("#070").mt(3)
             if(elapsedhour(time*1000)<NOVUM_LIMIT_HOURS) timediv.blink()
             let smallcontainer = Div().disp("flex").fd("column").w(200).mw(200).pad(5)
             smallcontainer.a(usernamediv, timediv)
-            let movediv = Div().html(username).html(movestrdisp)
-            let container = Div().disp("flex").pad(3).curlyborder().mar(3).cp().bc("#eee")
-            container.ae("mousedown", this.movelistclicked.bind(this, movestr))
+            let movediv = Div().html(username).html(movestrdisp).cp()
+            movediv.ae("mousedown", this.movelistclicked.bind(this, movestr))
+            let container = Div().disp("flex").pad(3).curlyborder().mar(3).bc("#eee")
             container.a(smallcontainer, movediv)
             this.movesdiv.a(container)
         }
